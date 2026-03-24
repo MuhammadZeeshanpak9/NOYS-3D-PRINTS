@@ -6,6 +6,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Menu, X, User as UserIcon } from 'lucide-react';
 import { useAuth } from '@/lib/auth/useAuth';
 import { Button } from '../ui/Button';
+import Image from 'next/image';
+import logo from '@/assets/logo 2D Toys.png';
+import { motion } from 'framer-motion';
 
 const navLinks = [
   { name: 'Home', href: '/' },
@@ -13,6 +16,7 @@ const navLinks = [
   { name: 'STL File Upload', href: '/stl-upload', protected: true },
   { name: 'Shop', href: '/shop' },
   { name: 'Gallery', href: '/gallery' },
+  { name: 'About Us', href: '/about' },
   { name: 'Contact Us', href: '/contact' },
 ];
 
@@ -29,8 +33,23 @@ export function Navbar() {
 
   return (
     <nav className="sticky top-0 z-40 w-full bg-[#0a2342]/95 backdrop-blur-md text-white shadow-lg border-b border-[#123968]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center h-20 gap-4 sm:gap-8">
+          {/* Logo on most left */}
+          <Link href="/" className="flex-shrink-0 group">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              className="relative w-16 h-16 sm:w-24 sm:h-24 overflow-visible"
+            >
+              <Image 
+                src={logo} 
+                alt="Logo" 
+                fill 
+                className="object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+                priority
+              />
+            </motion.div>
+          </Link>
           {/* Mobile Menu Button */}
           <div className="flex items-center md:hidden">
             <button
@@ -50,31 +69,29 @@ export function Navbar() {
                   <Link
                     key={link.name}
                     href={link.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      isActive
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive
                         ? 'text-primary bg-white/10'
                         : 'text-gray-200 hover:text-white hover:bg-white/5'
-                    }`}
+                      }`}
                   >
                     {link.name}
                   </Link>
                 );
               })}
             </div>
-            
+
             {/* Right Side Actions */}
             <div className="flex items-center space-x-4">
               <Link
                 href="/profile"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname === '/profile'
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === '/profile'
                     ? 'text-primary bg-white/10'
                     : 'text-gray-200 hover:text-white hover:bg-white/5'
-                }`}
+                  }`}
               >
                 My Profile
               </Link>
-              
+
               {isAuthenticated ? (
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-gray-300">Hello, {user?.name || 'User'}</span>
@@ -105,11 +122,10 @@ export function Navbar() {
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${isActive
                       ? 'text-primary bg-white/5'
                       : 'text-gray-300 hover:text-white hover:bg-white/5'
-                  }`}
+                    }`}
                 >
                   {link.name}
                 </Link>
@@ -122,7 +138,7 @@ export function Navbar() {
             >
               My Profile
             </Link>
-            
+
             {isAuthenticated ? (
               <button
                 onClick={() => {

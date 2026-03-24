@@ -5,8 +5,63 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { motion, Variants } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import confetti from 'canvas-confetti';
 
 export default function Home() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const triggerSprinkles = () => {
+    if (!canvasRef.current) return;
+
+    const myConfetti = confetti.create(canvasRef.current, {
+      resize: true,
+      useWorker: true
+    });
+
+    const defaults = {
+      spread: 360,
+      ticks: 100,
+      gravity: 0.5,
+      decay: 0.94,
+      startVelocity: 30,
+      shapes: ['circle', 'square'],
+      colors: ['#3b82f6', '#f97316', '#ffffff', '#0c2a50', '#60a5fa']
+    };
+
+    const shoot = () => {
+      // Create custom shapes from emojis
+      const gear = confetti.shapeFromText({ text: '⚙️', scalar: 3 });
+      const block = confetti.shapeFromText({ text: '🧱', scalar: 3 });
+      const box = confetti.shapeFromText({ text: '📦', scalar: 3 });
+      const puzzle = confetti.shapeFromText({ text: '🧩', scalar: 3 });
+
+      myConfetti({
+        ...defaults,
+        particleCount: 30,
+        scalar: 1.5,
+        shapes: [gear, block, box, puzzle, 'circle', 'square'] as any,
+        ticks: 150,
+        gravity: 0.6,
+        startVelocity: 45
+      });
+
+      myConfetti({
+        ...defaults,
+        particleCount: 20,
+        scalar: 0.8,
+        shapes: ['circle', 'square'] as any,
+        ticks: 200,
+        gravity: 0.4,
+        startVelocity: 35
+      });
+    };
+
+    shoot();
+    setTimeout(shoot, 100);
+    setTimeout(shoot, 200);
+  };
+
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -26,9 +81,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center pt-10 pb-20 px-4 relative overflow-hidden">
-      
+
       {/* Hero Logo Area */}
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 120, damping: 20, duration: 0.8 }}
@@ -36,20 +91,71 @@ export default function Home() {
       >
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-sky-400 rounded-full blur-[80px] opacity-30 mix-blend-multiply" />
         <div className="flex flex-col items-center justify-center w-full h-full relative z-10 text-center drop-shadow-2xl">
-          <h1 className="text-6xl sm:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-sky-100 to-sky-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]">
-            NOYS
-          </h1>
-          <h2 className="text-4xl sm:text-6xl font-black text-orange-500 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] mt-[-10px]">
-            3D PRINTS
-          </h2>
-          <p className="mt-4 font-bold text-white bg-blue-900/50 px-6 py-2 rounded-full border border-blue-400/30 backdrop-blur-sm text-sm sm:text-base">
+          <div className="flex flex-col items-center">
+            {/* NOYS - Falling Animation */}
+            <motion.h1
+              initial={{ y: -800, opacity: 0, rotate: -15 }}
+              animate={{ y: 0, opacity: 1, rotate: 0 }}
+              transition={{
+                type: "spring",
+                damping: 12,
+                stiffness: 100,
+                duration: 0.8,
+                delay: 0.2
+              }}
+              className="text-6xl sm:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-sky-100 to-sky-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]"
+            >
+              NOYS
+            </motion.h1>
+
+            {/* 3D PRINTS - Falling Animation */}
+            <div className="flex gap-4 mt-[-10px]">
+              {["3D", "PRINTS"].map((word, index) => (
+                <motion.h2
+                  key={word}
+                  initial={{ y: -800, opacity: 0, rotate: index === 0 ? 15 : -10 }}
+                  animate={{ y: 0, opacity: 1, rotate: 0 }}
+                  onAnimationComplete={word === "PRINTS" ? triggerSprinkles : undefined}
+                  transition={{
+                    type: "spring",
+                    damping: 10,
+                    stiffness: 80,
+                    duration: 0.8,
+                    delay: 0.6 + (index * 0.2)
+                  }}
+                  className={`text-4xl sm:text-6xl font-black drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] ${index === 0 ? 'text-orange-500' : 'text-white'}`}
+                >
+                  {word}
+                </motion.h2>
+              ))}
+            </div>
+
+            {/* Canvas Confetti (Behind Text) */}
+            <canvas
+              ref={canvasRef}
+              className="absolute inset-[-200px] w-[calc(100%+400px)] h-[calc(100%+400px)] pointer-events-none -z-10"
+              style={{ willChange: 'transform' }}
+            />
+          </div>
+
+          {/* A WORLD MADE IN PLASTIC - Slow Fade In */}
+          <motion.p
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              duration: 2.5,
+              delay: 1.8,
+              ease: "easeOut"
+            }}
+            className="mt-6 font-bold text-white bg-blue-900/50 px-8 py-3 rounded-full border border-blue-400/30 backdrop-blur-sm text-sm sm:text-lg tracking-widest uppercase shadow-xl"
+          >
             A WORLD MADE IN PLASTIC
-          </p>
+          </motion.p>
         </div>
       </motion.div>
 
       {/* Main Copy */}
-      <motion.div 
+      <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.6 }}
@@ -61,7 +167,7 @@ export default function Home() {
         <p className="text-lg sm:text-xl text-[#1a4073] font-medium leading-relaxed">
           High detail 3D printed miniatures, custom designs and hobby ready models made to order.
         </p>
-        
+
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
           <Link href="/shop">
             <Button variant="primary" size="lg" className="text-lg w-full sm:w-auto min-w-[200px]">
@@ -77,7 +183,7 @@ export default function Home() {
       </motion.div>
 
       {/* Secondary Copy */}
-      <motion.div 
+      <motion.div
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.5 }}
@@ -99,7 +205,7 @@ export default function Home() {
 
       {/* Process Section */}
       <div className="w-full max-w-6xl z-10 mt-8 mb-20 px-4">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
@@ -112,7 +218,7 @@ export default function Home() {
           <div className="h-[2px] w-12 sm:w-32 bg-blue-300"></div>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -132,8 +238,8 @@ export default function Home() {
                 </div>
                 <CardContent className="flex flex-col items-center px-4 py-2 mt-2 h-full">
                   <div className="w-full h-40 bg-blue-200 border-4 border-[#1a4073] rounded-xl mb-4 overflow-hidden flex items-center justify-center group-hover:shadow-[inset_0_0_20px_rgba(0,0,0,0.1)] transition-all duration-300 relative">
-                     <div className="text-blue-500 font-extrabold text-xl group-hover:scale-110 transition-transform duration-500 ease-in-out">{item.title} Image</div>
-                     <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="text-blue-500 font-extrabold text-xl group-hover:scale-110 transition-transform duration-500 ease-in-out">{item.title} Image</div>
+                    <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
                   <h4 className="font-extrabold text-[#0c2a50] text-lg mb-4 text-center h-12 flex items-center justify-center group-hover:text-blue-600 transition-colors duration-300 transform group-hover:-translate-y-1">
                     {item.title}
@@ -153,7 +259,7 @@ export default function Home() {
       </div>
 
       {/* Final CTA */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
