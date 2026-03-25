@@ -90,9 +90,10 @@ export default function Home() {
         transition={{ type: "spring", stiffness: 100, damping: 15, duration: 0.8 }}
         className="relative w-full max-w-[400px] sm:max-w-[1000px] h-[250px] sm:h-[500px] mb-6 mt-0"
       >
-        {/* Solid White Header Area - Broadened */}
-        <div className="absolute -top-[500px] left-1/2 -translate-x-1/2 w-[220vw] h-[1100px] bg-white -z-10" />
-        <div className="absolute top-[600px] left-1/2 -translate-x-1/2 w-[220vw] h-[200px] bg-gradient-to-b from-white to-transparent -z-10" />
+        {/* Solid White Header Area with Bluish Tone - Updated for better integration */}
+        <div className="absolute -top-[500px] left-1/2 -translate-x-1/2 w-[220vw] h-[1200px] bg-sky-50 -z-10" />
+        <div className="absolute top-[300px] left-1/2 -translate-x-1/2 w-[180vw] h-[800px] bg-gradient-to-b from-white via-sky-100/30 to-transparent -z-10" />
+        <div className="absolute top-[700px] left-1/2 -translate-x-1/2 w-[220vw] h-[250px] bg-gradient-to-b from-sky-50 to-transparent -z-10" />
         
         <div className="flex flex-col items-center justify-center w-full h-full relative z-10 text-center">
           <div className="flex flex-col items-center w-full">
