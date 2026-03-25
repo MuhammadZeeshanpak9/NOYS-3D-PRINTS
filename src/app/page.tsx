@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { motion, Variants } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import confetti from 'canvas-confetti';
+import logo from '@/assets/New_logo_brighter-removebg-preview (1).png';
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -80,74 +81,62 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center pt-10 pb-20 px-4 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center pt-16 pb-20 px-4 relative overflow-hidden">
 
-      {/* Hero Logo Area */}
+      {/* Hero Logo Area - Solid White Header - Broad Section */}
       <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 120, damping: 20, duration: 0.8 }}
-        className="relative w-[300px] h-[300px] sm:w-[500px] sm:h-[400px] mb-8 mt-4"
+        transition={{ type: "spring", stiffness: 100, damping: 15, duration: 0.8 }}
+        className="relative w-full max-w-[400px] sm:max-w-[1000px] h-[250px] sm:h-[500px] mb-6 mt-0"
       >
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-sky-400 rounded-full blur-[80px] opacity-30 mix-blend-multiply" />
-        <div className="flex flex-col items-center justify-center w-full h-full relative z-10 text-center drop-shadow-2xl">
-          <div className="flex flex-col items-center">
-            {/* NOYS - Falling Animation */}
-            <motion.h1
-              initial={{ y: -800, opacity: 0, rotate: -15 }}
-              animate={{ y: 0, opacity: 1, rotate: 0 }}
+        {/* Solid White Header Area - Broadened */}
+        <div className="absolute -top-[500px] left-1/2 -translate-x-1/2 w-[220vw] h-[1100px] bg-white -z-10" />
+        <div className="absolute top-[600px] left-1/2 -translate-x-1/2 w-[220vw] h-[200px] bg-gradient-to-b from-white to-transparent -z-10" />
+        
+        <div className="flex flex-col items-center justify-center w-full h-full relative z-10 text-center">
+          <div className="flex flex-col items-center w-full">
+            {/* NOYS 3D Logo - Broad and Immersive */}
+            <motion.div
+              initial={{ y: -800, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              onAnimationComplete={triggerSprinkles}
               transition={{
                 type: "spring",
-                damping: 12,
-                stiffness: 100,
-                duration: 0.8,
+                damping: 20,
+                stiffness: 60,
+                duration: 1,
                 delay: 0.2
               }}
-              className="text-6xl sm:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-sky-100 to-sky-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]"
+              className="relative w-full aspect-[2/1] sm:aspect-[2.5/1] max-h-full"
             >
-              NOYS
-            </motion.h1>
+              <Image 
+                src={logo} 
+                alt="Noys 3D Logo" 
+                fill 
+                className="object-contain"
+                priority
+              />
+            </motion.div>
 
-            {/* 3D PRINTS - Falling Animation */}
-            <div className="flex gap-4 mt-[-10px]">
-              {["3D", "PRINTS"].map((word, index) => (
-                <motion.h2
-                  key={word}
-                  initial={{ y: -800, opacity: 0, rotate: index === 0 ? 15 : -10 }}
-                  animate={{ y: 0, opacity: 1, rotate: 0 }}
-                  onAnimationComplete={word === "PRINTS" ? triggerSprinkles : undefined}
-                  transition={{
-                    type: "spring",
-                    damping: 10,
-                    stiffness: 80,
-                    duration: 0.8,
-                    delay: 0.6 + (index * 0.2)
-                  }}
-                  className={`text-4xl sm:text-6xl font-black drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] ${index === 0 ? 'text-orange-500' : 'text-white'}`}
-                >
-                  {word}
-                </motion.h2>
-              ))}
-            </div>
-
-            {/* Canvas Confetti (Behind Text) */}
+            {/* Canvas Confetti (Behind Text/Logo) */}
             <canvas
               ref={canvasRef}
-              className="absolute inset-[-200px] w-[calc(100%+400px)] h-[calc(100%+400px)] pointer-events-none -z-10"
-              style={{ willChange: 'transform' }}
+              className="absolute inset-[-200px] w-[calc(100%+400px)] h-[calc(100%+400px)] pointer-events-none -z-10 text-white"
+              style={{ opacity: 0.4 }}
             />
           </div>
 
-          {/* A WORLD MADE IN PLASTIC - Slow Fade In */}
+          {/* A WORLD MADE IN PLASTIC - Tight Spacing */}
           <motion.p
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{
               duration: 2.5,
-              delay: 1.8,
+              delay: 1.5,
               ease: "easeOut"
             }}
-            className="mt-6 font-bold text-white bg-blue-900/50 px-8 py-3 rounded-full border border-blue-400/30 backdrop-blur-sm text-sm sm:text-lg tracking-widest uppercase shadow-xl"
+            className="mt-2 font-black italic text-[#0a2342] bg-gray-50/30 px-12 py-4 rounded-full border border-gray-100/50 backdrop-blur-md text-base sm:text-2xl tracking-[0.25em] uppercase shadow-sm"
           >
             A WORLD MADE IN PLASTIC
           </motion.p>
@@ -159,12 +148,12 @@ export default function Home() {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.6 }}
-        className="max-w-3xl text-center z-10 space-y-6"
+        className="max-w-4xl text-center z-10 space-y-6 mt-12"
       >
-        <h2 className="text-4xl sm:text-5xl font-black text-[#0c2a50]">
+        <h2 className="text-4xl sm:text-7xl font-black text-blue-600 drop-shadow-[0_4px_0_rgba(0,0,0,0.1)]">
           A World Made in Plastic
         </h2>
-        <p className="text-lg sm:text-xl text-[#1a4073] font-medium leading-relaxed">
+        <p className="text-xl sm:text-3xl font-black leading-relaxed text-blue-500 drop-shadow-sm">
           High detail 3D printed miniatures, custom designs and hobby ready models made to order.
         </p>
 

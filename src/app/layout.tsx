@@ -25,13 +25,11 @@ export default function RootLayout({
       lang="en"
       className={`${nunito.variable} font-sans h-full antialiased`}
     >
-      <body className="min-h-full relative z-0">
+      <body className={`${nunito.variable} font-sans min-h-screen flex flex-col relative z-0 antialiased`}>
         <AnimatedBackground />
         <Navbar />
-        <main className="min-h-screen pt-16 md:pt-0 md:pl-64 flex flex-col">
-          <div className="flex-1">
-            {children}
-          </div>
+        <main className="flex-1 flex flex-col">
+          {children}
         </main>
       </body>
     </html>
