@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CreditCard, CheckCircle2, ShieldCheck, ArrowLeft } from 'lucide-react';
 
-export default function PaymentGatewayPage() {
+function PaymentGatewayContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -182,5 +182,17 @@ export default function PaymentGatewayPage() {
 
       </form>
     </div>
+  );
+}
+
+export default function PaymentGatewayPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-blue-500 font-bold text-xl">Loading secure checkout...</div>
+      </div>
+    }>
+      <PaymentGatewayContent />
+    </Suspense>
   );
 }
