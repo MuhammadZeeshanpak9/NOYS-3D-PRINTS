@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, ShoppingBag, Image as ImageIcon, MessageSquare, Info, Star, CreditCard, ShoppingCart } from 'lucide-react';
@@ -22,6 +22,7 @@ const navLinks = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
@@ -32,8 +33,18 @@ export function Navbar() {
     router.push('/');
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-[100] h-16 transition-all duration-300">
+    <header className={`fixed top-0 left-0 right-0 z-[100] h-16 transition-all duration-300 ${
+      isScrolled ? 'bg-sky-50/95 backdrop-blur-md shadow-sm border-b-2 border-blue-100/50' : 'bg-transparent'
+    }`}>
       {/* Horizontal Transparent Nav */}
       <nav className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Mobile Menu Button - Left Aligned */}

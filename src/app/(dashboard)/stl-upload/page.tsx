@@ -42,7 +42,7 @@ export default function STLUploadPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] p-8 max-w-4xl mx-auto">
+    <div className="min-h-[calc(100vh-64px)] p-8 pt-32 max-w-4xl mx-auto">
       <div className="text-center mb-10">
         <h1 className="text-4xl font-black text-[#0c2a50]">Print Your Own Files</h1>
         <p className="text-[#1a4073] mt-3 text-lg">
