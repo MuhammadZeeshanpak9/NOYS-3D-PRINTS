@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, ShoppingBag, Image as ImageIcon, MessageSquare, Info, Star } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, ShoppingBag, Image as ImageIcon, MessageSquare, Info, Star, CreditCard, ShoppingCart } from 'lucide-react';
 import { useAuth } from '@/lib/auth/useAuth';
+import { useCart } from '@/lib/cart/CartContext';
 import { Button } from '../ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -12,6 +13,7 @@ const navLinks = [
   { name: 'Home', href: '/', icon: LayoutDashboard },
   { name: 'AI Generator', href: '/ai-generator', protected: true, icon: Star },
   { name: 'STL File Upload', href: '/stl-upload', protected: true, icon: ShoppingBag },
+  { name: 'Pricing', href: '/pricing', icon: CreditCard },
   { name: 'Shop', href: '/shop', icon: ShoppingBag },
   { name: 'Gallery', href: '/gallery', icon: ImageIcon },
   { name: 'About Us', href: '/about', icon: Info },
@@ -23,6 +25,7 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
+  const { itemCount } = useCart();
 
   const handleLogout = () => {
     logout();
@@ -62,11 +65,23 @@ export function Navbar() {
           })}
         </ul>
 
-        {/* Right Actions: Auth / Profile */}
+        {/* Right Actions: Auth / Profile / Cart */}
         <div className="flex items-center gap-4">
+          
+          {/* CART ICON WITH BADGE */}
+          <Link href="/cart" className="relative p-2 text-[#0a2342] hover:text-primary transition-colors hover:scale-110 active:scale-95 duration-200">
+            <ShoppingCart size={24} className="stroke-[2.5px]" />
+            {itemCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm animate-in zoom-in-50 duration-300">
+                {itemCount > 99 ? '99+' : itemCount}
+              </span>
+            )}
+          </Link>
+
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
               <Link href="/profile" className="hidden sm:block text-xs font-bold text-[#0a2342] hover:text-primary uppercase tracking-tighter">My Account</Link>
+              <Link href="/profile/history" className="hidden sm:block text-xs font-bold text-[#0a2342] hover:text-primary uppercase tracking-tighter">My Generations</Link>
               <Button 
                 variant="primary" 
                 size="sm" 
@@ -140,13 +155,21 @@ export function Navbar() {
 
               <div className="mt-auto pt-8 border-t border-gray-100 space-y-4">
                 {isAuthenticated ? (
-                  <Button 
-                    variant="outline" 
-                    className="w-full font-bold border-gray-200"
-                    onClick={() => { handleLogout(); setIsOpen(false); }}
-                  >
-                    Log Out
-                  </Button>
+                  <div className="space-y-3">
+                    <Link href="/profile" onClick={() => setIsOpen(false)} className="block">
+                      <Button variant="outline" className="w-full font-bold border-gray-200">My Account</Button>
+                    </Link>
+                    <Link href="/profile/history" onClick={() => setIsOpen(false)} className="block">
+                      <Button variant="outline" className="w-full font-bold border-gray-200 text-blue-600">My Generations</Button>
+                    </Link>
+                    <Button 
+                      variant="outline" 
+                      className="w-full font-bold border-red-200 text-red-500 hover:bg-red-50"
+                      onClick={() => { handleLogout(); setIsOpen(false); }}
+                    >
+                      Log Out
+                    </Button>
+                  </div>
                 ) : (
                   <Link href="/login" onClick={() => setIsOpen(false)} className="block">
                     <Button variant="primary" className="w-full font-black">

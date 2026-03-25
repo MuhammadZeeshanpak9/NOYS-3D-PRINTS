@@ -4,8 +4,10 @@ import React, { useState } from 'react';
 import { UploadBox } from '@/components/ui/UploadBox';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { AlertCircle, Wand2 } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import { AlertCircle, Wand2, Link as LinkIcon, Download, Save, CheckCircle } from 'lucide-react';
 import apiClient from '@/lib/api/client';
+import { useAuth } from '@/lib/auth/useAuth';
 
 export default function AIGeneratorPage() {
   const [prompt, setPrompt] = useState('');
@@ -13,6 +15,11 @@ export default function AIGeneratorPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  const { isAuthenticated } = useAuth();
+  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const handleGenerate = async () => {
     if (!prompt.trim() && images.length === 0) {
@@ -30,19 +37,45 @@ export default function AIGeneratorPage() {
       formData.append('prompt', prompt);
       images.forEach((img) => formData.append('images', img));
 
-      // Uncomment to trigger actual backend
-      // const response = await apiClient.post('/ai/generate', formData, {
-      //   headers: { 'Content-Type': 'multipart/form-data' }
-      // });
-      // setResult(response.data.previewUrl);
-
       // Mock behavior
       await new Promise((r) => setTimeout(r, 2000));
       setResult('/placeholder-3.jpg'); // Provide a fake resulting image representing a 3D model
+      setIsSaved(false); // Reset save state for new generation
     } catch (err) {
       setError("Failed to generate model. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!isAuthenticated) {
+      setLoginModalOpen(true);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      console.log('POST /user/save-generation ->', { prompt, resultUrl: result });
+      
+      // Save locally to mock the gallery population
+      const existingSaved = JSON.parse(localStorage.getItem('2dtoy_gallery') || '[]');
+      const newSavedItem = {
+        id: Date.now().toString(),
+        prompt: prompt || 'Custom Uploaded AI Model',
+        imageUrl: result,
+        date: new Date().toISOString()
+      };
+      localStorage.setItem('2dtoy_gallery', JSON.stringify([newSavedItem, ...existingSaved]));
+
+      await new Promise((r) => setTimeout(r, 1000)); // Mock network save
+      setIsSaved(true);
+      alert('Model saved to your Gallery successfully!');
+    } catch (err) {
+      console.error('Failed to save', err);
+      alert('Failed to save. Try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -72,7 +105,7 @@ export default function AIGeneratorPage() {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="E.g., A miniature gothic castle tower with battlements..."
-                className="w-full p-4 rounded-xl border-2 border-blue-100 focus:border-blue-400 focus:ring-0 outline-none resize-y shadow-inner min-h-[120px]"
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white resize-y shadow-inner min-h-[120px]"
               />
             </div>
 
@@ -119,9 +152,24 @@ export default function AIGeneratorPage() {
                     <p className="text-white font-bold text-lg drop-shadow-md">Preview Ready</p>
                   </div>
                 </div>
-                <div className="flex gap-4 w-full">
-                  <Button variant="secondary" className="flex-1">Order Print</Button>
-                  <Button variant="outline" className="flex-1">Download STL</Button>
+                <div className="flex flex-col gap-3 w-full">
+                  <div className="flex gap-3 w-full">
+                    <Button variant="secondary" className="flex-1">Order Print</Button>
+                    <Button variant="outline" className="flex-1">Download STL</Button>
+                  </div>
+                  <Button 
+                    variant="primary" 
+                    className="w-full flex items-center justify-center gap-2"
+                    onClick={handleSave}
+                    isLoading={isSaving}
+                    disabled={isSaved}
+                  >
+                    {isSaved ? (
+                      <><CheckCircle size={20} /> Saved to Gallery</>
+                    ) : (
+                      <><Save size={20} /> Save to Gallery</>
+                    )}
+                  </Button>
                 </div>
               </div>
             ) : (
@@ -134,6 +182,18 @@ export default function AIGeneratorPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Modal isOpen={isLoginModalOpen} onClose={() => setLoginModalOpen(false)} title="Login Required">
+        <div className="text-center space-y-6">
+          <p className="text-gray-600 font-semibold mb-6">
+            You must be logged in to save generations to your personal gallery.
+          </p>
+          <div className="space-y-4">
+            <Button className="w-full" onClick={() => setLoginModalOpen(false)}>Okay</Button>
+          </div>
+        </div>
+      </Modal>
+
     </div>
   );
 }

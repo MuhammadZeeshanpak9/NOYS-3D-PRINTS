@@ -14,17 +14,17 @@ export default function ContactPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Name</label>
-                <input type="text" className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="John Doe" />
+                <input type="text" className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="John Doe" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Email</label>
-                <input type="email" className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="john@example.com" />
+                <input type="email" className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="john@example.com" />
               </div>
             </div>
             
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">Message</label>
-              <textarea rows={5} className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none resize-y" placeholder="Tell us about your project..."></textarea>
+              <textarea rows={5} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white resize-y" placeholder="Tell us about your project..."></textarea>
             </div>
             
             <Button variant="primary" className="w-full" size="lg">Send Message</Button>

@@ -3,6 +3,7 @@ import { Nunito } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground";
+import { CartProvider } from "@/lib/cart/CartContext";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -26,11 +27,13 @@ export default function RootLayout({
       className={`${nunito.variable} font-sans h-full antialiased`}
     >
       <body className={`${nunito.variable} font-sans min-h-screen flex flex-col relative z-0 antialiased`}>
-        <AnimatedBackground />
-        <Navbar />
-        <main className="flex-1 flex flex-col">
-          {children}
-        </main>
+        <CartProvider>
+          <AnimatedBackground />
+          <Navbar />
+          <main className="flex-1 flex flex-col">
+            {children}
+          </main>
+        </CartProvider>
       </body>
     </html>
   );
