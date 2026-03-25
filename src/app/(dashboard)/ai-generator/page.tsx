@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal';
 import { AlertCircle, Wand2, Link as LinkIcon, Download, Save, CheckCircle } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 import { useAuth } from '@/lib/auth/useAuth';
+import { useToast } from '@/lib/toast/ToastContext';
 
 export default function AIGeneratorPage() {
   const [prompt, setPrompt] = useState('');
@@ -17,6 +18,8 @@ export default function AIGeneratorPage() {
   const [error, setError] = useState<string | null>(null);
   
   const { isAuthenticated } = useAuth();
+  const { success, error: toastError } = useToast();
+  
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -70,10 +73,10 @@ export default function AIGeneratorPage() {
 
       await new Promise((r) => setTimeout(r, 1000)); // Mock network save
       setIsSaved(true);
-      alert('Model saved to your Gallery successfully!');
+      success('Model saved to your Gallery successfully!');
     } catch (err) {
       console.error('Failed to save', err);
-      alert('Failed to save. Try again.');
+      toastError('Failed to save. Try again.');
     } finally {
       setIsSaving(false);
     }
@@ -153,10 +156,7 @@ export default function AIGeneratorPage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-3 w-full">
-                  <div className="flex gap-3 w-full">
-                    <Button variant="secondary" className="flex-1">Order Print</Button>
-                    <Button variant="outline" className="flex-1">Download STL</Button>
-                  </div>
+                  <Button variant="outline" className="w-full font-bold">Download STL</Button>
                   <Button 
                     variant="primary" 
                     className="w-full flex items-center justify-center gap-2"

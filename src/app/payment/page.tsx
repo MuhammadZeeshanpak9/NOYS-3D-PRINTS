@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useToast } from '@/lib/toast/ToastContext';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CreditCard, CheckCircle2, ShieldCheck, ArrowLeft } from 'lucide-react';
@@ -9,6 +10,7 @@ import { CreditCard, CheckCircle2, ShieldCheck, ArrowLeft } from 'lucide-react';
 function PaymentGatewayContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { error } = useToast();
   
   const type = searchParams.get('type');
   const idStr = searchParams.get('id');
@@ -61,9 +63,9 @@ function PaymentGatewayContent() {
       setTimeout(() => {
           router.push('/profile');
       }, 3000);
-    } catch (error) {
-      console.error('Payment failed', error);
-      alert('Payment failed to process. Please try again.');
+    } catch (err) {
+      console.error('Payment failed', err);
+      error('Payment failed to process. Please try again.');
     } finally {
       setIsProcessing(false);
     }

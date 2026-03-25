@@ -4,9 +4,11 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useCart } from '@/lib/cart/CartContext';
+import { useToast } from '@/lib/toast/ToastContext';
 
 export default function ShopPage() {
   const { addToCart } = useCart();
+  const { success } = useToast();
 
   const handleAddToCart = (i: number) => {
     addToCart({
@@ -16,7 +18,7 @@ export default function ShopPage() {
       quantity: 1,
       image: `/placeholder-${i}.jpg`
     });
-    alert(`Added Fantasy Miniature Pack ${i} to your cart!`);
+    success(`Added Fantasy Miniature Pack ${i} to your cart!`);
   };
 
   return (

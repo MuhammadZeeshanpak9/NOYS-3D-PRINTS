@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import { useCart } from '@/lib/cart/CartContext';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { useToast } from '@/lib/toast/ToastContext';
 import { CreditCard, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CheckoutPage() {
   const { items, cartTotal, clearCart } = useCart();
+  const { error } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -22,9 +24,9 @@ export default function CheckoutPage() {
       await new Promise((resolve) => setTimeout(resolve, 2000));
       clearCart();
       setIsSuccess(true);
-    } catch (error) {
-      console.error('Checkout failed', error);
-      alert('Order failed to process. Please try again.');
+    } catch (err) {
+      console.error('Checkout failed', err);
+      error('Order failed to process. Please try again.');
     } finally {
       setIsProcessing(false);
     }

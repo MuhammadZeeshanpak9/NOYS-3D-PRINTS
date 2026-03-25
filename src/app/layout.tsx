@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground";
 import { CartProvider } from "@/lib/cart/CartContext";
+import { ToastProvider } from "@/lib/toast/ToastContext";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -27,13 +28,15 @@ export default function RootLayout({
       className={`${nunito.variable} font-sans h-full antialiased`}
     >
       <body className={`${nunito.variable} font-sans min-h-screen flex flex-col relative z-0 antialiased`}>
-        <CartProvider>
-          <AnimatedBackground />
-          <Navbar />
-          <main className="flex-1 flex flex-col">
-            {children}
-          </main>
-        </CartProvider>
+        <ToastProvider>
+          <CartProvider>
+            <AnimatedBackground />
+            <Navbar />
+            <main className="flex-1 flex flex-col">
+              {children}
+            </main>
+          </CartProvider>
+        </ToastProvider>
       </body>
     </html>
   );

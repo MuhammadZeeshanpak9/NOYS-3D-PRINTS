@@ -7,6 +7,8 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/auth/useAuth';
 import { useCart } from '@/lib/cart/CartContext';
+import { useToast } from '@/lib/toast/ToastContext';
+import { Modal } from '@/components/ui/Modal';
 import { Download, ShoppingBag, RefreshCw, Trash2, Wand2 } from 'lucide-react';
 
 interface GenerationItem {
@@ -20,8 +22,11 @@ export default function HistoryPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
   const { addToCart } = useCart();
+  const { success, info } = useToast();
+  
   const [generations, setGenerations] = useState<GenerationItem[]>([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   useEffect(() => {
     // Avoid redirecting prematurely if the auth state is still computing
@@ -54,11 +59,11 @@ export default function HistoryPage() {
       quantity: 1,
       image: item.imageUrl
     });
-    alert('Custom Print added to your cart!');
+    success('Custom Print added to your cart!');
   };
 
   const handleDownloadSTL = (id: string) => {
-    alert(`Initiating STL download for Generation ID: ${id}`);
+    info(`Initiating STL download for Generation ID: ${id}`);
     // Mock download action
   };
 
@@ -67,11 +72,16 @@ export default function HistoryPage() {
   };
 
   const handleDelete = (id: string) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this generation? This cannot be undone.");
-    if (confirmDelete) {
-      const updatedList = generations.filter(item => item.id !== id);
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteTarget) {
+      const updatedList = generations.filter(item => item.id !== deleteTarget);
       setGenerations(updatedList);
       localStorage.setItem('2dtoy_gallery', JSON.stringify(updatedList));
+      setDeleteTarget(null);
+      success("Generation cleanly deleted.");
     }
   };
 
@@ -168,6 +178,19 @@ export default function HistoryPage() {
           ))}
         </div>
       )}
+
+      <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Confirm Deletion">
+        <div className="text-center space-y-6">
+          <p className="text-[#1a4073] font-bold mb-6 text-lg">
+            Are you sure you want to delete this model? This operation cannot be undone.
+          </p>
+          <div className="flex gap-4">
+            <Button variant="outline" className="w-full font-bold border-gray-300" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="primary" className="w-full bg-red-500 hover:bg-red-600 text-white border-red-600" onClick={confirmDelete}>Delete</Button>
+          </div>
+        </div>
+      </Modal>
+
     </div>
   );
 }
