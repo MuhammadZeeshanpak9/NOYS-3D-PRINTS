@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground";
+import { CookieBanner } from "@/components/ui/CookieBanner";
 import { CartProvider } from "@/lib/cart/CartContext";
 import { ToastProvider } from "@/lib/toast/ToastContext";
 
@@ -35,6 +37,8 @@ export default function RootLayout({
             <main className="flex-1 flex flex-col">
               {children}
             </main>
+            <Footer />
+            <CookieBanner />
           </CartProvider>
         </ToastProvider>
       </body>
