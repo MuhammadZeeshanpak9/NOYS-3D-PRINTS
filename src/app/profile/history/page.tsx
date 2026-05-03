@@ -28,7 +28,7 @@ interface CustomOrder {
   review_status: string;
   reference_image_url: string | null;
   image_source: string;
-  total_price: number;
+  total: number;
   size_label: string;
   finish_label: string;
   shipping_address: string;
