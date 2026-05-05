@@ -73,15 +73,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center pt-16 pb-20 px-4 relative overflow-hidden">
-      <div className="fixed top-24 right-4 z-50 bg-white p-4 rounded-xl border-2 border-orange-400 shadow-md">
-        <p className="text-xs font-bold text-gray-500 mb-2 uppercase">Dev Auth controls</p>
-        <button 
-          onClick={() => setIsLoggedIn(!isLoggedIn)}
-          className={`px-3 py-1 rounded-full text-sm font-bold border-2 ${isLoggedIn ? 'bg-green-100 text-green-700 border-green-500' : 'bg-gray-100 text-gray-700 border-gray-300'}`}
-        >
-          {isLoggedIn ? 'Logged In' : 'Logged Out'}
-        </button>
-      </div>
+
 
       <Modal 
         isOpen={isLoginModalOpen} 

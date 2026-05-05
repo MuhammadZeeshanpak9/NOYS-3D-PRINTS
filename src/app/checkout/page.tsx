@@ -173,15 +173,15 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-bold text-[#1a4073]">First Name</label>
-                  <input required type="text" name="first_name" value={shipping.first_name} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="John" />
+                  <input required type="text" name="first_name" value={shipping.first_name} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="First name" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-bold text-[#1a4073]">Last Name</label>
-                  <input required type="text" name="last_name" value={shipping.last_name} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="Doe" />
+                  <input required type="text" name="last_name" value={shipping.last_name} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="Last name" />
                 </div>
                 <div className="space-y-1 sm:col-span-2">
                   <label className="text-sm font-bold text-[#1a4073]">Email Address</label>
-                  <input required type="email" name="email" value={shipping.email} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="john@example.com" />
+                  <input required type="email" name="email" value={shipping.email} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="your@email.com" />
                 </div>
                 <div className="space-y-1 sm:col-span-2">
                   <label className="text-sm font-bold text-[#1a4073]">Shipping Address</label>
@@ -208,8 +208,8 @@ export default function CheckoutPage() {
               <div className="bg-blue-50/50 p-6 rounded-2xl border-2 border-blue-200 mb-6 flex items-center gap-4">
                 <CreditCard className="text-blue-500 shrink-0" size={32} />
                 <div>
-                  <h4 className="font-extrabold text-[#0a2342]">Secure Mock Payment</h4>
-                  <p className="text-sm text-[#1a4073]">Payment integration coming soon. Enter dummy data to test flow.</p>
+                  <h4 className="font-extrabold text-[#0a2342]">Secure Payment</h4>
+                  <p className="text-sm text-[#1a4073]">Your payment information is encrypted and processed securely.</p>
                 </div>
               </div>
 
