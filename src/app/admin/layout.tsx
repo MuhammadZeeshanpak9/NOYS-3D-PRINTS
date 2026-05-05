@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/useAuth';
-import { LayoutDashboard, Users, FileText, Settings, LogOut, Package, Tags, Cuboid, Palette, Layers, Paintbrush, Truck, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Settings, LogOut, Package, Tags, Cuboid, Palette, Layers, Paintbrush, Truck, ClipboardList, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -58,10 +58,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Users size={20} />
             <span className="font-medium">Users</span>
           </Link>
-          <div className="pt-2 pb-1 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Custom Orders</div>
+          <div className="pt-2 pb-1 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Orders</div>
+          <Link href="/admin/orders" className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors">
+            <ShoppingBag size={20} />
+            <span className="font-medium">Customer Orders</span>
+          </Link>
           <Link href="/admin/custom-orders" className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors">
             <ClipboardList size={20} />
-            <span className="font-medium">Orders</span>
+            <span className="font-medium">Custom Orders</span>
           </Link>
           <div className="pt-2 pb-1 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Configuration</div>
           <Link href="/admin/model-sizes" className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors">
