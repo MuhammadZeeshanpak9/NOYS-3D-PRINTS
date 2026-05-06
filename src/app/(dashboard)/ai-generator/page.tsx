@@ -64,7 +64,18 @@ export default function AIGeneratorPage() {
   const startPolling = (generationId: string) => {
     if (pollRef.current) clearInterval(pollRef.current);
 
+    const startTime = Date.now();
+    const TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes — Tripo typically takes 1-2 min
+
     pollRef.current = setInterval(async () => {
+      if (Date.now() - startTime > TIMEOUT_MS) {
+        clearInterval(pollRef.current!);
+        pollRef.current = null;
+        setLoading(false);
+        setError('Generation is taking longer than expected. Check "My Designs" in a few minutes — it may still complete.');
+        return;
+      }
+
       try {
         const res = await apiClient.get(`/generations/${generationId}`);
         const gen: GenerationResult = res.data;
@@ -76,7 +87,6 @@ export default function AIGeneratorPage() {
         setLoading(false);
 
         if (gen.image_url === '') {
-          // Empty string = Tripo reported failure
           setError('3D generation failed. Please try again with a different prompt or image.');
         } else {
           setResult(gen);
