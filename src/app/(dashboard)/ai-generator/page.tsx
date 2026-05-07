@@ -91,7 +91,7 @@ export default function AIGeneratorPage() {
   const startPolling = (generationId: string) => {
     if (pollRef.current) clearInterval(pollRef.current);
     const startTime = Date.now();
-    const TIMEOUT_MS = 3 * 60 * 1000;
+    const TIMEOUT_MS = 4.5 * 60 * 1000; // 4.5 min — backend background task runs 4 min max
 
     pollRef.current = setInterval(async () => {
       if (Date.now() - startTime > TIMEOUT_MS) {
@@ -111,6 +111,7 @@ export default function AIGeneratorPage() {
           setProgress(Math.min(95, gen.processing_progress));
         }
 
+        // null = still processing, keep waiting
         if (gen.image_url === null) return;
 
         clearInterval(pollRef.current!); pollRef.current = null;
@@ -118,8 +119,9 @@ export default function AIGeneratorPage() {
 
         setTimeout(() => {
           setLoading(false);
-          if (gen.image_url === '') {
-            setError('3D generation failed. Please try again with a different prompt or image.');
+          // Only treat as failed if BOTH image and 3D model are missing
+          if (gen.image_url === '' && !gen.stl_url) {
+            setError('3D generation failed. Please try a different prompt or image.');
           } else {
             setResult(gen);
             success('Model generated successfully!');
