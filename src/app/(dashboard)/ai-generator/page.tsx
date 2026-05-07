@@ -38,6 +38,7 @@ export default function AIGeneratorPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [credits, setCredits] = useState<number>(0);
+  const [timedOut, setTimedOut] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -96,9 +97,9 @@ export default function AIGeneratorPage() {
     pollRef.current = setInterval(async () => {
       if (Date.now() - startTime > TIMEOUT_MS) {
         clearInterval(pollRef.current!); pollRef.current = null;
-        stopProgress(0);
+        stopProgress(100);
         setLoading(false);
-        setError('Generation is taking longer than expected. Check "My Designs" in a few minutes — it may still complete.');
+        setTimedOut(true);
         return;
       }
 
@@ -151,6 +152,7 @@ export default function AIGeneratorPage() {
     setError(null);
     setResult(null);
     setIsSaved(false);
+    setTimedOut(false);
     startProgressSimulation();
 
     try {
@@ -250,6 +252,19 @@ export default function AIGeneratorPage() {
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white resize-y shadow-inner min-h-[100px]"
               />
             </div>
+
+            {timedOut && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-lg text-sm flex flex-col gap-2">
+                <p className="font-semibold">Your model is still being generated in the background.</p>
+                <p className="text-xs text-blue-600">It usually completes within a few minutes. Check <strong>My Designs</strong> shortly.</p>
+                <button
+                  className="text-xs font-bold text-blue-700 underline text-left"
+                  onClick={() => router.push('/profile/history')}
+                >
+                  Go to My Designs →
+                </button>
+              </div>
+            )}
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-sm flex items-start gap-2">

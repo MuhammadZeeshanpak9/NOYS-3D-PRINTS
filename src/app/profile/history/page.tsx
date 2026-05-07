@@ -9,8 +9,9 @@ import { useAuth } from '@/lib/auth/useAuth';
 import { useCart } from '@/lib/cart/CartContext';
 import { useToast } from '@/lib/toast/ToastContext';
 import { Modal } from '@/components/ui/Modal';
-import { Download, ShoppingBag, RefreshCw, Trash2, Wand2, Package, ExternalLink } from 'lucide-react';
+import { Download, ShoppingBag, RefreshCw, Trash2, Wand2, Package, ExternalLink, Box, X } from 'lucide-react';
 import apiClient from '@/lib/api/client';
+import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
 
 interface GenerationItem {
   id: string;
@@ -87,6 +88,7 @@ export default function HistoryPage() {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [viewTarget, setViewTarget] = useState<GenerationItem | null>(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -239,12 +241,20 @@ export default function HistoryPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {generations.map((gen) => (
                 <Card key={gen.id} className="flex flex-col h-full hover:scale-105 transition-transform duration-300 border-2 border-transparent hover:border-blue-300 shadow-[6px_6px_0px_#1a4073]">
-                  <div className="h-56 bg-gradient-to-tr from-sky-100 to-white w-full border-b-2 border-slate-100 relative overflow-hidden flex items-center justify-center">
+                  <div
+                    className="h-56 bg-gradient-to-tr from-sky-100 to-white w-full border-b-2 border-slate-100 relative overflow-hidden flex items-center justify-center cursor-pointer group"
+                    onClick={() => setViewTarget(gen)}
+                  >
                     {gen.image_url ? (
-                      <img src={gen.image_url} alt={gen.prompt} className="object-cover w-full h-full" />
+                      <img src={gen.image_url} alt={gen.prompt} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" />
                     ) : (
                       <span className="text-gray-400 font-bold tracking-widest uppercase">No Image</span>
                     )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-[#0c2a50] text-xs font-black px-3 py-1.5 rounded-full shadow transition-opacity duration-200">
+                        View Details
+                      </span>
+                    </div>
                     <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-[#0c2a50] text-xs font-black px-3 py-1 rounded-full shadow-sm border border-gray-100">
                       {new Date(gen.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </div>
@@ -355,6 +365,84 @@ export default function HistoryPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Generation detail modal */}
+      {viewTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setViewTarget(null)}>
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h2 className="text-lg font-black text-[#0c2a50]">Generated Model</h2>
+              <button onClick={() => setViewTarget(null)} className="p-1.5 rounded-full hover:bg-slate-100 transition-colors">
+                <X size={20} className="text-slate-500" />
+              </button>
+            </div>
+
+            {/* Preview */}
+            <div className="relative bg-slate-50 min-h-[320px] flex items-center justify-center">
+              {viewTarget.stl_url ? (
+                <div className="w-full" style={{ height: 380 }}>
+                  <ModelViewer3D src={viewTarget.stl_url} poster={viewTarget.image_url ?? undefined} />
+                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full pointer-events-none">
+                    <Box size={12} />
+                    <span>Drag to rotate · Scroll to zoom</span>
+                  </div>
+                </div>
+              ) : viewTarget.image_url ? (
+                <img src={viewTarget.image_url} alt={viewTarget.prompt} className="max-h-[420px] w-full object-contain p-4" />
+              ) : (
+                <p className="text-slate-400 font-bold">No preview available</p>
+              )}
+            </div>
+
+            {/* Prompt + date */}
+            <div className="px-6 py-4 border-b border-slate-100">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Prompt</p>
+              <p className="text-[#1a4073] font-semibold">"{viewTarget.prompt}"</p>
+              <p className="text-xs text-slate-400 mt-2">
+                Generated {new Date(viewTarget.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="px-6 py-5 flex flex-col gap-3">
+              <Button
+                variant="primary"
+                className="w-full font-bold shadow-md shadow-orange-500/20"
+                onClick={() => { handleOrderPrint(viewTarget); setViewTarget(null); }}
+              >
+                <ShoppingBag size={18} className="mr-2" /> Order Print
+              </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  disabled={!viewTarget.stl_url}
+                  onClick={() => handleDownloadSTL(viewTarget)}
+                >
+                  <Download size={16} className="mr-2" /> Download STL
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full border-blue-200"
+                  onClick={() => { handleReuse(viewTarget.prompt); setViewTarget(null); }}
+                >
+                  <RefreshCw size={16} className="mr-2 text-blue-500" /> Reuse Prompt
+                </Button>
+              </div>
+              <button
+                onClick={() => { handleDelete(viewTarget.id); setViewTarget(null); }}
+                className="flex justify-center items-center gap-1.5 mt-1 text-xs font-bold text-red-400 hover:text-red-600 transition-colors"
+              >
+                <Trash2 size={12} /> Delete Model
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Confirm Deletion">
