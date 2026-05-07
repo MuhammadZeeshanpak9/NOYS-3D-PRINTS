@@ -1,21 +1,31 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/auth/useAuth';
+import { useToast } from '@/lib/toast/ToastContext';
+import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/api/client';
+import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
+import { Download, ShoppingCart, RefreshCw, X, Box, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface SavedGeneration {
   id: string;
   prompt: string;
   image_url: string;
+  stl_url: string | null;
   created_at: string;
 }
 
 export default function GalleryPage() {
+  const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const { success } = useToast();
   const [savedItems, setSavedItems] = useState<SavedGeneration[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewTarget, setViewTarget] = useState<SavedGeneration | null>(null);
+  const [imgZoom, setImgZoom] = useState(1);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -25,13 +35,17 @@ export default function GalleryPage() {
     }
   }, [isAuthenticated]);
 
+  // Reset zoom when modal changes
+  useEffect(() => { setImgZoom(1); }, [viewTarget]);
+
   const loadLocalStorage = () => {
     const existingSaved = JSON.parse(localStorage.getItem('2dtoy_gallery') || '[]');
     const mapped = existingSaved.map((item: any) => ({
       id: item.id,
       prompt: item.prompt,
       image_url: item.imageUrl,
-      created_at: item.date
+      stl_url: null,
+      created_at: item.date,
     }));
     setSavedItems(mapped);
     setLoading(false);
@@ -65,19 +79,32 @@ export default function GalleryPage() {
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        
         {savedItems.map((item) => (
-          <Card key={item.id} className="overflow-hidden hover:shadow-2xl transition-shadow duration-300 border-2 border-orange-300 shadow-[4px_4px_0px_#cc6200]">
-            <div className="h-64 bg-gray-100 w-full flex items-center justify-center overflow-hidden">
+          <Card
+            key={item.id}
+            className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-orange-300 shadow-[4px_4px_0px_#cc6200] cursor-pointer group"
+            onClick={() => setViewTarget(item)}
+          >
+            <div className="h-64 bg-gray-100 w-full flex items-center justify-center overflow-hidden relative">
               {item.image_url ? (
-                <img src={item.image_url} alt={item.prompt} className="object-cover h-full w-full" />
+                <img src={item.image_url} alt={item.prompt} className="object-cover h-full w-full group-hover:scale-105 transition-transform duration-300" />
               ) : (
                 <span className="text-gray-400 font-semibold">No Image</span>
               )}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-200 flex items-center justify-center">
+                <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-[#0c2a50] text-xs font-black px-3 py-1.5 rounded-full shadow transition-opacity duration-200">
+                  {item.stl_url ? 'View 3D Model' : 'View Full Size'}
+                </span>
+              </div>
+              {item.stl_url && (
+                <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full pointer-events-none">
+                  <Box size={10} /> <span>3D</span>
+                </div>
+              )}
             </div>
-            <CardContent className="p-4 bg-orange-50 backdrop-blur-sm">
-              <h3 className="font-bold text-lg text-[#0c2a50] line-clamp-1">{item.prompt}</h3>
-              <p className="text-sm text-orange-600 font-bold tracking-wide">MY SAVED GENERATION</p>
+            <CardContent className="p-4 bg-orange-50">
+              <h3 className="font-bold text-base text-[#0c2a50] line-clamp-1">{item.prompt}</h3>
+              <p className="text-xs text-orange-600 font-bold tracking-wide mt-0.5">MY SAVED GENERATION</p>
             </CardContent>
           </Card>
         ))}
@@ -94,6 +121,107 @@ export default function GalleryPage() {
           </Card>
         ))}
       </div>
+
+      {/* Detail modal */}
+      {viewTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={() => setViewTarget(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h2 className="text-lg font-black text-[#0c2a50] line-clamp-1">{viewTarget.prompt}</h2>
+              <button onClick={() => setViewTarget(null)} className="p-1.5 rounded-full hover:bg-slate-100 transition-colors shrink-0 ml-3">
+                <X size={20} className="text-slate-500" />
+              </button>
+            </div>
+
+            {/* Preview */}
+            <div className="relative bg-slate-50 flex items-center justify-center overflow-hidden" style={{ minHeight: 340 }}>
+              {viewTarget.stl_url ? (
+                <div className="w-full" style={{ height: 400 }}>
+                  <ModelViewer3D src={viewTarget.stl_url} poster={viewTarget.image_url ?? undefined} />
+                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full pointer-events-none">
+                    <Box size={12} />
+                    <span>Drag to rotate · Scroll to zoom</span>
+                  </div>
+                </div>
+              ) : viewTarget.image_url ? (
+                <div className="w-full flex flex-col items-center">
+                  <div className="overflow-auto w-full flex items-center justify-center" style={{ maxHeight: 420 }}>
+                    <img
+                      src={viewTarget.image_url}
+                      alt={viewTarget.prompt}
+                      style={{ transform: `scale(${imgZoom})`, transformOrigin: 'center', transition: 'transform 0.2s', maxWidth: '100%', cursor: imgZoom > 1 ? 'zoom-out' : 'zoom-in' }}
+                      className="object-contain p-4"
+                      onClick={() => setImgZoom(z => z >= 2.5 ? 1 : z + 0.5)}
+                    />
+                  </div>
+                  <div className="flex items-center gap-3 py-2 bg-white/80 w-full justify-center border-t border-slate-100">
+                    <button
+                      className="p-1.5 rounded-full hover:bg-slate-100 disabled:opacity-40"
+                      onClick={() => setImgZoom(z => Math.max(1, z - 0.5))}
+                      disabled={imgZoom <= 1}
+                    >
+                      <ZoomOut size={16} className="text-slate-500" />
+                    </button>
+                    <span className="text-xs font-semibold text-slate-500 w-10 text-center">{Math.round(imgZoom * 100)}%</span>
+                    <button
+                      className="p-1.5 rounded-full hover:bg-slate-100 disabled:opacity-40"
+                      onClick={() => setImgZoom(z => Math.min(3, z + 0.5))}
+                      disabled={imgZoom >= 3}
+                    >
+                      <ZoomIn size={16} className="text-slate-500" />
+                    </button>
+                    <span className="text-xs text-slate-400 ml-1">or click image to zoom</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-slate-400 font-bold py-20">No preview available</p>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="px-6 py-5 flex flex-col gap-3">
+              <Button
+                variant="primary"
+                className="w-full font-bold"
+                onClick={() => {
+                  sessionStorage.setItem('noys_builder_preselect', JSON.stringify({ generationId: viewTarget.id, imageUrl: viewTarget.image_url }));
+                  router.push('/builder?source=ai');
+                  setViewTarget(null);
+                }}
+              >
+                <ShoppingCart size={18} className="mr-2" /> Order This Print
+              </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  disabled={!viewTarget.stl_url}
+                  onClick={() => viewTarget.stl_url && window.open(viewTarget.stl_url, '_blank')}
+                >
+                  <Download size={16} className="mr-2" /> Download STL
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full border-blue-200"
+                  onClick={() => {
+                    router.push(`/ai-generator?prompt=${encodeURIComponent(viewTarget.prompt)}`);
+                    setViewTarget(null);
+                  }}
+                >
+                  <RefreshCw size={16} className="mr-2 text-blue-500" /> Reuse Prompt
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
