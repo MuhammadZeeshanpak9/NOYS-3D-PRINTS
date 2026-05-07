@@ -19,6 +19,7 @@ interface GenerationResult {
   stl_url: string | null;
   is_saved: boolean;
   credits_used: number;
+  processing_progress?: number;
 }
 
 export default function AIGeneratorPage() {
@@ -28,6 +29,7 @@ export default function AIGeneratorPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<GenerationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
 
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { success, error: toastError } = useToast();
@@ -37,11 +39,11 @@ export default function AIGeneratorPage() {
   const [isSaved, setIsSaved] = useState(false);
   const [credits, setCredits] = useState<number>(0);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startTimeRef = useRef<number>(0);
 
   useEffect(() => {
-    if (isAuthenticated && !authLoading) {
-      fetchUserCredits();
-    }
+    if (isAuthenticated && !authLoading) fetchUserCredits();
   }, [isAuthenticated, authLoading]);
 
   useEffect(() => {
@@ -51,7 +53,10 @@ export default function AIGeneratorPage() {
   }, []);
 
   useEffect(() => {
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+      if (progressRef.current) clearInterval(progressRef.current);
+    };
   }, []);
 
   const fetchUserCredits = async () => {
@@ -61,16 +66,37 @@ export default function AIGeneratorPage() {
     } catch {}
   };
 
+  // Smooth simulated progress — never reaches 100 until generation confirmed
+  const startProgressSimulation = () => {
+    startTimeRef.current = Date.now();
+    setProgress(0);
+    if (progressRef.current) clearInterval(progressRef.current);
+
+    progressRef.current = setInterval(() => {
+      const elapsed = (Date.now() - startTimeRef.current) / 1000;
+      let estimated: number;
+      if (elapsed < 15) estimated = Math.round((elapsed / 15) * 30);
+      else if (elapsed < 60) estimated = Math.round(30 + ((elapsed - 15) / 45) * 40);
+      else if (elapsed < 120) estimated = Math.round(70 + ((elapsed - 60) / 60) * 20);
+      else estimated = Math.min(95, Math.round(90 + ((elapsed - 120) / 60) * 5));
+      setProgress(estimated);
+    }, 800);
+  };
+
+  const stopProgress = (final: number) => {
+    if (progressRef.current) { clearInterval(progressRef.current); progressRef.current = null; }
+    setProgress(final);
+  };
+
   const startPolling = (generationId: string) => {
     if (pollRef.current) clearInterval(pollRef.current);
-
     const startTime = Date.now();
     const TIMEOUT_MS = 3 * 60 * 1000;
 
     pollRef.current = setInterval(async () => {
       if (Date.now() - startTime > TIMEOUT_MS) {
-        clearInterval(pollRef.current!);
-        pollRef.current = null;
+        clearInterval(pollRef.current!); pollRef.current = null;
+        stopProgress(0);
         setLoading(false);
         setError('Generation is taking longer than expected. Check "My Designs" in a few minutes — it may still complete.');
         return;
@@ -80,39 +106,40 @@ export default function AIGeneratorPage() {
         const res = await apiClient.get(`/generations/${generationId}`);
         const gen: GenerationResult = res.data;
 
+        // Use real Tripo progress if available
+        if (gen.processing_progress && gen.processing_progress > 0) {
+          setProgress(Math.min(95, gen.processing_progress));
+        }
+
         if (gen.image_url === null) return;
 
-        clearInterval(pollRef.current!);
-        pollRef.current = null;
-        setLoading(false);
+        clearInterval(pollRef.current!); pollRef.current = null;
+        stopProgress(100);
 
-        if (gen.image_url === '') {
-          setError('3D generation failed. Please try again with a different prompt or image.');
-        } else {
-          setResult(gen);
-          success('Model generated successfully!');
-        }
+        setTimeout(() => {
+          setLoading(false);
+          if (gen.image_url === '') {
+            setError('3D generation failed. Please try again with a different prompt or image.');
+          } else {
+            setResult(gen);
+            success('Model generated successfully!');
+          }
+        }, 400);
       } catch {
-        clearInterval(pollRef.current!);
-        pollRef.current = null;
+        clearInterval(pollRef.current!); pollRef.current = null;
+        stopProgress(0);
         setLoading(false);
-        setError('Failed to retrieve generation result. Please check My Designs.');
+        setError('Connection error while checking generation status. Please try again.');
       }
     }, 4000);
   };
 
-  // Accept optional imageFiles to bypass React state timing on auto-generate
-  const handleGenerate = async (imageFiles?: File[]) => {
-    const filesToUse = imageFiles ?? images;
-
-    if (!prompt.trim() && filesToUse.length === 0) {
+  const handleGenerate = async () => {
+    if (!prompt.trim() && images.length === 0) {
       setError('Please provide a prompt or upload at least one image reference.');
       return;
     }
-    if (!isAuthenticated) {
-      setLoginModalOpen(true);
-      return;
-    }
+    if (!isAuthenticated) { setLoginModalOpen(true); return; }
     if (credits < 1) {
       setError("You don't have enough credits. Please purchase more credits.");
       return;
@@ -122,11 +149,12 @@ export default function AIGeneratorPage() {
     setError(null);
     setResult(null);
     setIsSaved(false);
+    startProgressSimulation();
 
     try {
       const formData = new FormData();
       formData.append('prompt', prompt);
-      filesToUse.forEach((img) => formData.append('images', img));
+      images.forEach((img) => formData.append('images', img));
 
       const response = await apiClient.post('/generations/generate', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -136,40 +164,21 @@ export default function AIGeneratorPage() {
       setCredits(prev => prev - 1);
 
       if (gen.image_url) {
-        setResult(gen);
-        setLoading(false);
-        success('Model generated successfully!');
+        stopProgress(100);
+        setTimeout(() => { setResult(gen); setLoading(false); success('Model generated successfully!'); }, 400);
       } else {
         startPolling(gen.id);
       }
     } catch (err: any) {
+      stopProgress(0);
       setLoading(false);
       const msg = err.response?.data?.error || 'Failed to generate model. Please try again.';
       setError(msg);
     }
   };
 
-  // Auto-generate when image is uploaded
-  const handleFilesChange = (files: File[]) => {
-    setImages(files);
-    if (files.length > 0 && !loading) {
-      if (!isAuthenticated) {
-        setLoginModalOpen(true);
-        return;
-      }
-      if (credits >= 1) {
-        handleGenerate(files);
-      } else {
-        setError("You don't have enough credits to auto-generate. Add a prompt and click Generate when ready.");
-      }
-    }
-  };
-
   const handleSave = async () => {
-    if (!isAuthenticated || !result) {
-      setLoginModalOpen(true);
-      return;
-    }
+    if (!isAuthenticated || !result) { setLoginModalOpen(true); return; }
     setIsSaving(true);
     try {
       await apiClient.post(`/generations/${result.id}/save`);
@@ -214,13 +223,13 @@ export default function AIGeneratorPage() {
         <Card className="shadow-lg border-t-8 border-t-blue-500">
           <CardContent className="p-6 space-y-6">
             <div className="space-y-2">
-              <label className="text-base font-bold text-[#1a4073]">Upload a Reference Photo</label>
-              <p className="text-xs text-slate-500">Uploading an image will automatically start generation.</p>
+              <label className="text-base font-bold text-[#1a4073]">Upload a Reference Photo <span className="text-slate-400 font-normal text-sm">(optional)</span></label>
+              <p className="text-xs text-slate-500">Upload your image, check it looks right, then click Generate below.</p>
               <UploadBox
                 files={images}
-                onFilesChange={handleFilesChange}
+                onFilesChange={setImages}
                 accept="image/jpeg, image/png"
-                label="Drop a photo here to auto-generate"
+                label="Drop a photo here or click to browse"
               />
             </div>
 
@@ -231,7 +240,7 @@ export default function AIGeneratorPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-base font-bold text-[#1a4073]">Describe Your Model</label>
+              <label className="text-base font-bold text-[#1a4073]">Describe Your Model <span className="text-slate-400 font-normal text-sm">(optional)</span></label>
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -251,7 +260,7 @@ export default function AIGeneratorPage() {
               variant="primary"
               size="lg"
               className="w-full shadow-[0_4px_0_#cc6200]"
-              onClick={() => handleGenerate()}
+              onClick={handleGenerate}
               isLoading={loading}
               disabled={(!prompt.trim() && images.length === 0) || loading}
             >
@@ -265,23 +274,30 @@ export default function AIGeneratorPage() {
         <Card className="shadow-lg min-h-[500px] flex flex-col">
           <CardContent className="p-6 flex-1 flex flex-col items-center justify-center relative">
             {loading ? (
-              <div className="flex flex-col items-center text-blue-500 space-y-4 text-center">
+              <div className="flex flex-col items-center space-y-6 text-center w-full max-w-sm">
                 <div className="w-20 h-20 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
-                <h3 className="text-xl font-bold">Sculpting in the cloud...</h3>
-                <p className="text-gray-500 text-sm max-w-xs">
-                  This typically takes 1–2 minutes. You can stay on this page or come back via My Designs.
-                </p>
+                <div className="w-full space-y-2">
+                  <div className="flex justify-between text-sm font-semibold text-slate-600">
+                    <span>Sculpting your model...</span>
+                    <span className="text-blue-600">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-700 ease-out"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  <p className="text-gray-500 text-xs mt-2">
+                    This typically takes 1–2 minutes. You can stay on this page or check My Designs later.
+                  </p>
+                </div>
               </div>
             ) : result ? (
               <div className="w-full h-full flex flex-col space-y-4">
-                {/* 3D viewer or 2D image */}
                 <div className="flex-1 rounded-xl overflow-hidden relative min-h-[350px]">
                   {result.stl_url ? (
                     <>
-                      <ModelViewer3D
-                        src={result.stl_url}
-                        poster={result.image_url ?? undefined}
-                      />
+                      <ModelViewer3D src={result.stl_url} poster={result.image_url ?? undefined} />
                       <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full pointer-events-none">
                         <Box size={12} />
                         <span>Drag to rotate · Scroll to zoom</span>
