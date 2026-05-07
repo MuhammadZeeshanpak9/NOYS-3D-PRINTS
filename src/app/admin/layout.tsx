@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/useAuth';
-import { LayoutDashboard, Users, FileText, Settings, LogOut, Package, Tags, Cuboid, Palette, Layers, Paintbrush, Truck, ClipboardList, ShoppingBag, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Settings, LogOut, Package, Tags, Cuboid, Palette, Layers, Paintbrush, Truck, ClipboardList, ShoppingBag, HelpCircle, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading) {
@@ -31,10 +32,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen flex bg-slate-50">
-      {}
-      <aside className="w-64 bg-white border-r border-slate-200 shadow-sm flex flex-col">
-        <div className="h-16 flex items-center px-6 border-b border-slate-200">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 shadow-sm flex flex-col transform transition-transform duration-300 md:relative md:translate-x-0 md:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200">
           <span className="text-xl font-bold text-slate-800 tracking-tight">Admin<span className="text-primary">Panel</span></span>
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden p-1.5 rounded-lg hover:bg-slate-100">
+            <X size={18} className="text-slate-500" />
+          </button>
         </div>
         
         <nav className="flex-1 px-4 py-6 space-y-2">
@@ -113,9 +125,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {}
-      <main className="flex-1 p-8 overflow-y-auto">
-        {children}
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto flex flex-col min-w-0">
+        {/* Mobile top bar */}
+        <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-slate-200 sticky top-0 z-20">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+          >
+            <Menu size={22} className="text-slate-700" />
+          </button>
+          <span className="font-bold text-slate-800">Admin<span className="text-primary">Panel</span></span>
+        </div>
+        <div className="p-4 sm:p-6 lg:p-8">
+          {children}
+        </div>
       </main>
     </div>
   );

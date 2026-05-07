@@ -134,7 +134,7 @@ export function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-80 bg-white z-[120] md:hidden flex flex-col p-8 shadow-2xl"
+              className="fixed inset-y-0 left-0 w-72 max-w-[88vw] bg-white z-[120] md:hidden flex flex-col p-6 shadow-2xl"
             >
               <div className="flex items-center justify-between mb-12">
                 <span className="font-black text-2xl tracking-tighter text-[#0a2342]">NOYS <span className="text-primary italic">3D</span></span>

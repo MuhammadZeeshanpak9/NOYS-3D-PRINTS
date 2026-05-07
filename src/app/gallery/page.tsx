@@ -72,7 +72,7 @@ export default function GalleryPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] p-8 max-w-7xl mx-auto pt-24">
+    <div className="min-h-[calc(100vh-64px)] p-4 sm:p-8 max-w-7xl mx-auto pt-24">
       <h1 className="text-4xl font-bold text-[#0c2a50] mb-8 text-center pt-8">Miniature Gallery</h1>
       <p className="text-center text-[#1a4073] mb-12 max-w-2xl mx-auto">
         Browse our collection of custom 3D printed models, tabletop terrain, and hobby pieces.

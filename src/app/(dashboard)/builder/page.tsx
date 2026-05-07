@@ -325,7 +325,7 @@ export default function BuilderPage() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-black text-[#0c2a50]">Build Your Custom 3D Model</h1>
+          <h1 className="text-2xl sm:text-4xl font-black text-[#0c2a50]">Build Your Custom 3D Model</h1>
           <p className="text-[#1a4073] mt-2 text-lg">
             Upload your image or use AI, then configure your model.
           </p>
@@ -383,7 +383,7 @@ export default function BuilderPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <button
                       onClick={() => setImageSource('upload')}
-                      className="group border-4 border-[#1a4073] rounded-[2rem] p-8 bg-white hover:bg-blue-50 shadow-[6px_6px_0px_#1a4073] hover:-translate-y-1 transition-all text-center"
+                      className="group border-4 border-[#1a4073] rounded-[2rem] p-5 sm:p-8 bg-white hover:bg-blue-50 shadow-[6px_6px_0px_#1a4073] hover:-translate-y-1 transition-all text-center"
                     >
                       <Upload size={40} className="mx-auto text-[#1a4073] mb-3" />
                       <h3 className="text-xl font-black text-[#0c2a50]">Upload My Image</h3>
@@ -391,7 +391,7 @@ export default function BuilderPage() {
                     </button>
                     <button
                       onClick={() => setImageSource('ai')}
-                      className="group border-4 border-[#ff7b00] rounded-[2rem] p-8 bg-white hover:bg-orange-50 shadow-[6px_6px_0px_#cc6200] hover:-translate-y-1 transition-all text-center"
+                      className="group border-4 border-[#ff7b00] rounded-[2rem] p-5 sm:p-8 bg-white hover:bg-orange-50 shadow-[6px_6px_0px_#cc6200] hover:-translate-y-1 transition-all text-center"
                     >
                       <Wand2 size={40} className="mx-auto text-[#ff7b00] mb-3" />
                       <h3 className="text-xl font-black text-[#0c2a50]">Use AI Generation</h3>
@@ -412,7 +412,7 @@ export default function BuilderPage() {
                       </button>
                     </div>
                     {!imagePreview ? (
-                      <label className="block border-4 border-dashed border-[#1a4073] rounded-[2rem] p-10 text-center cursor-pointer bg-white hover:bg-blue-50 transition-all shadow-[6px_6px_0px_rgba(26,64,115,0.2)] hover:shadow-[6px_6px_0px_#1a4073]">
+                      <label className="block border-4 border-dashed border-[#1a4073] rounded-[2rem] p-6 sm:p-10 text-center cursor-pointer bg-white hover:bg-blue-50 transition-all shadow-[6px_6px_0px_rgba(26,64,115,0.2)] hover:shadow-[6px_6px_0px_#1a4073]">
                         <input
                           type="file"
                           accept="image/jpeg,image/png,image/webp"
@@ -479,7 +479,7 @@ export default function BuilderPage() {
                     ) : (
                       <>
                         <p className="text-sm font-semibold text-gray-500">Select a generation to use as your reference:</p>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-h-80 overflow-y-auto pr-1">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-80 overflow-y-auto pr-1">
                           {generations.map(gen => (
                             <button
                               key={gen.id}
@@ -528,7 +528,7 @@ export default function BuilderPage() {
                   <h2 className="text-2xl font-black text-[#0c2a50] mb-1">Select Your Size</h2>
                   <p className="text-gray-500">Choose the height of your printed model.</p>
                 </div>
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {modelSizes.map(size => {
                     const price = effectivePrice(size.price, size.is_on_sale, size.sale_price);
                     const selected = selectedSize?.id === size.id;
@@ -787,7 +787,7 @@ export default function BuilderPage() {
         </Card>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
             {step !== 'image' && (
               <Button variant="outline" onClick={goBack}>
