@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google/model-viewer": "^4.2.0",
     "@types/canvas-confetti": "^1.9.0",
     "axios": "^1.13.6",
     "canvas-confetti": "^1.9.4",

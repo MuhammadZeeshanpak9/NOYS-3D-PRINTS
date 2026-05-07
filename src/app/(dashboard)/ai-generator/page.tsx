@@ -5,7 +5,8 @@ import { UploadBox } from '@/components/ui/UploadBox';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { AlertCircle, Wand2, Download, Save, CheckCircle, ShoppingCart, XCircle } from 'lucide-react';
+import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
+import { AlertCircle, Wand2, Download, Save, CheckCircle, ShoppingCart, XCircle, Box } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 import { useAuth } from '@/lib/auth/useAuth';
 import { useToast } from '@/lib/toast/ToastContext';
@@ -49,7 +50,6 @@ export default function AIGeneratorPage() {
     if (promptParam) setPrompt(promptParam);
   }, []);
 
-  // Clean up polling on unmount
   useEffect(() => {
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, []);
@@ -65,7 +65,7 @@ export default function AIGeneratorPage() {
     if (pollRef.current) clearInterval(pollRef.current);
 
     const startTime = Date.now();
-    const TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes — Tripo typically takes 1-2 min
+    const TIMEOUT_MS = 3 * 60 * 1000;
 
     pollRef.current = setInterval(async () => {
       if (Date.now() - startTime > TIMEOUT_MS) {
@@ -80,7 +80,7 @@ export default function AIGeneratorPage() {
         const res = await apiClient.get(`/generations/${generationId}`);
         const gen: GenerationResult = res.data;
 
-        if (gen.image_url === null) return; // still processing
+        if (gen.image_url === null) return;
 
         clearInterval(pollRef.current!);
         pollRef.current = null;
@@ -101,8 +101,11 @@ export default function AIGeneratorPage() {
     }, 4000);
   };
 
-  const handleGenerate = async () => {
-    if (!prompt.trim() && images.length === 0) {
+  // Accept optional imageFiles to bypass React state timing on auto-generate
+  const handleGenerate = async (imageFiles?: File[]) => {
+    const filesToUse = imageFiles ?? images;
+
+    if (!prompt.trim() && filesToUse.length === 0) {
       setError('Please provide a prompt or upload at least one image reference.');
       return;
     }
@@ -123,7 +126,7 @@ export default function AIGeneratorPage() {
     try {
       const formData = new FormData();
       formData.append('prompt', prompt);
-      images.forEach((img) => formData.append('images', img));
+      filesToUse.forEach((img) => formData.append('images', img));
 
       const response = await apiClient.post('/generations/generate', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -132,19 +135,33 @@ export default function AIGeneratorPage() {
       const gen: GenerationResult = response.data;
       setCredits(prev => prev - 1);
 
-      // If image_url already populated (placeholder/fallback mode) — show immediately
       if (gen.image_url) {
         setResult(gen);
         setLoading(false);
         success('Model generated successfully!');
       } else {
-        // Tripo is processing — poll until done
         startPolling(gen.id);
       }
     } catch (err: any) {
       setLoading(false);
       const msg = err.response?.data?.error || 'Failed to generate model. Please try again.';
       setError(msg);
+    }
+  };
+
+  // Auto-generate when image is uploaded
+  const handleFilesChange = (files: File[]) => {
+    setImages(files);
+    if (files.length > 0 && !loading) {
+      if (!isAuthenticated) {
+        setLoginModalOpen(true);
+        return;
+      }
+      if (credits >= 1) {
+        handleGenerate(files);
+      } else {
+        setError("You don't have enough credits to auto-generate. Add a prompt and click Generate when ready.");
+      }
     }
   };
 
@@ -175,7 +192,7 @@ export default function AIGeneratorPage() {
       <div className="text-center mb-8">
         <h1 className="text-4xl font-black text-[#0c2a50]">AI 3D Model Generator</h1>
         <p className="text-[#1a4073] mt-2 max-w-2xl mx-auto text-lg">
-          Describe what you want or upload reference photos, and our AI will generate a ready-to-print 3D model.
+          Upload a reference photo or describe what you want — our AI will generate a ready-to-print 3D model.
         </p>
         {isAuthenticated && (
           <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full text-sm font-semibold text-blue-700">
@@ -193,25 +210,33 @@ export default function AIGeneratorPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Input panel */}
         <Card className="shadow-lg border-t-8 border-t-blue-500">
           <CardContent className="p-6 space-y-6">
+            <div className="space-y-2">
+              <label className="text-base font-bold text-[#1a4073]">Upload a Reference Photo</label>
+              <p className="text-xs text-slate-500">Uploading an image will automatically start generation.</p>
+              <UploadBox
+                files={images}
+                onFilesChange={handleFilesChange}
+                accept="image/jpeg, image/png"
+                label="Drop a photo here to auto-generate"
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-slate-200" />
+              <span className="text-xs text-slate-400 font-semibold uppercase">or describe it</span>
+              <div className="flex-1 h-px bg-slate-200" />
+            </div>
+
             <div className="space-y-2">
               <label className="text-base font-bold text-[#1a4073]">Describe Your Model</label>
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="E.g., A miniature gothic castle tower with battlements..."
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white resize-y shadow-inner min-h-[120px]"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-base font-bold text-[#1a4073]">Reference Images (Optional)</label>
-              <UploadBox
-                files={images}
-                onFilesChange={setImages}
-                accept="image/jpeg, image/png"
-                label="Drop reference photos here"
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white resize-y shadow-inner min-h-[100px]"
               />
             </div>
 
@@ -226,7 +251,7 @@ export default function AIGeneratorPage() {
               variant="primary"
               size="lg"
               className="w-full shadow-[0_4px_0_#cc6200]"
-              onClick={handleGenerate}
+              onClick={() => handleGenerate()}
               isLoading={loading}
               disabled={(!prompt.trim() && images.length === 0) || loading}
             >
@@ -236,6 +261,7 @@ export default function AIGeneratorPage() {
           </CardContent>
         </Card>
 
+        {/* Preview panel */}
         <Card className="shadow-lg min-h-[500px] flex flex-col">
           <CardContent className="p-6 flex-1 flex flex-col items-center justify-center relative">
             {loading ? (
@@ -248,21 +274,36 @@ export default function AIGeneratorPage() {
               </div>
             ) : result ? (
               <div className="w-full h-full flex flex-col space-y-4">
-                <div className="flex-1 bg-gray-100 rounded-xl overflow-hidden relative flex items-center justify-center min-h-[300px] border border-gray-200 shadow-inner">
-                  {result.image_url ? (
-                    <img src={result.image_url} alt="Generated 3D Model Preview" className="object-cover h-full w-full" />
+                {/* 3D viewer or 2D image */}
+                <div className="flex-1 rounded-xl overflow-hidden relative min-h-[350px]">
+                  {result.stl_url ? (
+                    <>
+                      <ModelViewer3D
+                        src={result.stl_url}
+                        poster={result.image_url ?? undefined}
+                      />
+                      <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full pointer-events-none">
+                        <Box size={12} />
+                        <span>Drag to rotate · Scroll to zoom</span>
+                      </div>
+                    </>
+                  ) : result.image_url ? (
+                    <div className="relative w-full h-full bg-gray-100 border border-gray-200 shadow-inner flex items-center justify-center min-h-[300px]">
+                      <img src={result.image_url} alt="Generated 3D Model Preview" className="object-cover h-full w-full" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-4">
+                        <p className="text-white font-bold text-lg drop-shadow-md">Preview Ready</p>
+                      </div>
+                    </div>
                   ) : (
-                    <div className="text-gray-400">No preview available</div>
+                    <div className="text-gray-400 flex items-center justify-center h-full">No preview available</div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-4">
-                    <p className="text-white font-bold text-lg drop-shadow-md">Preview Ready</p>
-                  </div>
                 </div>
+
                 <div className="flex flex-col gap-3 w-full">
                   <Button variant="outline" className="w-full font-bold" disabled={!result.stl_url}
                     onClick={() => result.stl_url && window.open(result.stl_url, '_blank')}>
                     <Download className="mr-2 h-4 w-4" />
-                    Download STL
+                    Download 3D Model
                   </Button>
                   <Button
                     variant="primary"
@@ -294,7 +335,7 @@ export default function AIGeneratorPage() {
               <div className="text-center opacity-40">
                 <Wand2 size={64} className="mx-auto text-blue-300 mb-4" />
                 <h3 className="text-2xl font-bold text-[#1a4073]">Awaiting Generation</h3>
-                <p className="text-[#1a4073] mt-2">Your 3D preview will appear here.</p>
+                <p className="text-[#1a4073] mt-2">Upload a photo or enter a description to get started.</p>
               </div>
             )}
           </CardContent>
