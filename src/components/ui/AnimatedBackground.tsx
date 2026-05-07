@@ -12,7 +12,7 @@ export function AnimatedBackground() {
     setMounted(true);
   }, []);
 
-  if (!mounted || pathname?.startsWith('/admin')) return null;
+  if (!mounted || pathname?.startsWith('/admin') || pathname?.startsWith('/preview')) return null;
 
   const elements = Array.from({ length: 25 });
 

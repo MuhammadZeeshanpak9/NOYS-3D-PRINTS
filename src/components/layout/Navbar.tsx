@@ -41,7 +41,7 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (pathname?.startsWith('/admin')) return null;
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/preview')) return null;
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-[100] h-16 transition-all duration-300 ${

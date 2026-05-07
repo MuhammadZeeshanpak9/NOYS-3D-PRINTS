@@ -15,7 +15,7 @@ export function Footer() {
   const pathname = usePathname();
   const year = new Date().getFullYear();
 
-  if (pathname?.startsWith('/admin')) return null;
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/preview')) return null;
 
   return (
     <footer className="relative z-10 bg-[#0a2342]/90 backdrop-blur-sm border-t border-sky-900/50 text-white mt-auto">
