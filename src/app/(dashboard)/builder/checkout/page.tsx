@@ -289,17 +289,8 @@ export default function BuilderCheckoutPage() {
                     />
                   </Field>
                 </div>
-                <Field label="Country">
-                  <select name="country" value={shipping.country} onChange={handleShippingChange} className={inputClass}>
-                    <option>United Kingdom</option>
-                    <option>Ireland</option>
-                    <option>United States</option>
-                    <option>Canada</option>
-                    <option>Australia</option>
-                    <option>Germany</option>
-                    <option>France</option>
-                    <option>Other</option>
-                  </select>
+                <Field label={<span className="flex items-center gap-2">Country <span className="text-xs font-semibold text-sky-500 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-full">UK shipping only</span></span>}>
+                  <input disabled type="text" value="United Kingdom" className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 text-[#0c2a50] bg-gray-50 font-semibold cursor-not-allowed opacity-80" />
                 </Field>
               </CardContent>
             </Card>
@@ -463,12 +454,12 @@ export default function BuilderCheckoutPage() {
 
 // ─── UI helpers ───────────────────────────────────────────────────────────────
 
-const inputClass = 'w-full px-4 py-3 rounded-xl border-2 border-gray-300 text-[#0c2a50] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white font-semibold';
+const inputClass = 'w-full px-4 py-3 rounded-xl border-2 border-gray-300 text-[#0c2a50] placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white font-semibold';
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="space-y-1">
-      <label className="text-sm font-black text-[#1a4073]">{label}</label>
+      <label className="text-sm font-black text-[#1a4073] flex items-center gap-2">{label}</label>
       {children}
     </div>
   );

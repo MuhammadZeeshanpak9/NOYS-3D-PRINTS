@@ -24,7 +24,8 @@ export default function CheckoutPage() {
     email: '',
     address: '',
     city: '',
-    zip_code: ''
+    zip_code: '',
+    country: 'United Kingdom',
   });
 
   useEffect(() => {
@@ -69,7 +70,8 @@ export default function CheckoutPage() {
           email: user.email || '',
           address: address,
           city: city,
-          zip_code: zip_code
+          zip_code: zip_code,
+          country: 'United Kingdom',
         });
       }
     } catch (err) {
@@ -107,7 +109,8 @@ export default function CheckoutPage() {
           email: shipping.email,
           address: shipping.address,
           city: shipping.city,
-          zip_code: shipping.zip_code
+          zip_code: shipping.zip_code,
+          country: shipping.country,
         }
       });
       
@@ -173,22 +176,29 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-bold text-[#1a4073]">First Name</label>
-                  <input required type="text" name="first_name" value={shipping.first_name} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="First name" />
+                  <input required type="text" name="first_name" value={shipping.first_name} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="First name" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-bold text-[#1a4073]">Last Name</label>
-                  <input required type="text" name="last_name" value={shipping.last_name} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="Last name" />
+                  <input required type="text" name="last_name" value={shipping.last_name} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="Last name" />
                 </div>
                 <div className="space-y-1 sm:col-span-2">
                   <label className="text-sm font-bold text-[#1a4073]">Email Address</label>
-                  <input required type="email" name="email" value={shipping.email} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="your@email.com" />
+                  <input required type="email" name="email" value={shipping.email} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="your@email.com" />
                 </div>
                 <div className="space-y-1 sm:col-span-2">
                   <label className="text-sm font-bold text-[#1a4073]">Shipping Address</label>
-                  <input required type="text" name="address" value={shipping.address} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white mb-2" placeholder="123 Creator St" />
+                  <input required type="text" name="address" value={shipping.address} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white mb-2" placeholder="123 Creator St" />
                   <div className="grid grid-cols-2 gap-4">
-                    <input required type="text" name="city" value={shipping.city} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="City" />
-                    <input required type="text" name="zip_code" value={shipping.zip_code} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="Zip Code" />
+                    <input required type="text" name="city" value={shipping.city} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="City" />
+                    <input required type="text" name="zip_code" value={shipping.zip_code} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="Postcode" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-bold text-[#1a4073] flex items-center gap-2">
+                      Country
+                      <span className="text-xs font-semibold text-sky-500 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-full">UK shipping only</span>
+                    </label>
+                    <input disabled type="text" value="United Kingdom" className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 bg-gray-50 cursor-not-allowed opacity-80" />
                   </div>
                 </div>
               </div>
@@ -216,16 +226,16 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <div className="space-y-1">
                   <label className="text-sm font-bold text-[#1a4073]">Card Number</label>
-                  <input required type="text" maxLength={19} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="0000 0000 0000 0000" />
+                  <input required type="text" maxLength={19} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="0000 0000 0000 0000" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-sm font-bold text-[#1a4073]">Expiry Date</label>
-                    <input required type="text" maxLength={5} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="MM/YY" />
+                    <input required type="text" maxLength={5} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="MM/YY" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-bold text-[#1a4073]">CVV</label>
-                    <input required type="text" maxLength={4} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="123" />
+                    <input required type="text" maxLength={4} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="123" />
                   </div>
                 </div>
               </div>

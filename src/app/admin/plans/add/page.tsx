@@ -100,7 +100,7 @@ export default function AddPlanPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Price ($/mo)</label>
+              <label className="text-sm font-semibold text-slate-700">Price (£/mo)</label>
               <input 
                 required 
                 type="number" 

@@ -118,7 +118,7 @@ export default function AdminPlansCreditsPage() {
                     )}
                   </div>
                   <div className="mb-6">
-                    <span className="text-3xl font-bold text-slate-900">${plan.price}</span>
+                    <span className="text-3xl font-bold text-slate-900">£{plan.price}</span>
                     <span className="text-slate-500 text-sm">/month</span>
                   </div>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 mb-4">
@@ -164,7 +164,7 @@ export default function AdminPlansCreditsPage() {
               <div key={pack.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center justify-between">
                 <div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-1">{pack.credits} <span className="text-sm font-normal text-slate-500">Credits</span></h3>
-                  <p className="text-slate-600 font-medium">${pack.price}</p>
+                  <p className="text-slate-600 font-medium">£{pack.price}</p>
                   {!pack.is_active && (
                     <span className="text-xs text-red-500 font-medium">Inactive</span>
                   )}

@@ -28,7 +28,7 @@ export function CreditCard({ id, credits, price, onAction }: CreditCardProps) {
 
         <div className="w-full flex-grow flex flex-col justify-end mt-4 pt-4 border-t-2 border-dashed border-blue-200">
           <div className="text-2xl font-extrabold text-[#0a2342] mb-4">
-            {price}
+            £{price}
           </div>
           <Button 
             variant="outline" 

@@ -44,8 +44,14 @@ export function PricingCard({
           <div className="text-center mb-6">
             <h4 className={`text-2xl font-black mb-2 ${isPopular ? 'text-orange-600' : 'text-[#0c2a50]'}`}>{name}</h4>
             <div className="flex items-baseline justify-center gap-1">
-              <span className="text-4xl font-extrabold text-[#0a2342]">{price}</span>
-              {price !== 'Free' && <span className="text-lg font-bold text-gray-500">/month</span>}
+              {price === '0' || price === 'Free' ? (
+                <span className="text-4xl font-extrabold text-[#0a2342]">Free</span>
+              ) : (
+                <>
+                  <span className="text-4xl font-extrabold text-[#0a2342]">£{price}</span>
+                  <span className="text-lg font-bold text-gray-500">/month</span>
+                </>
+              )}
             </div>
           </div>
 

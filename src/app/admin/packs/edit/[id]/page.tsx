@@ -114,7 +114,7 @@ export default function EditPackPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Price ($)</label>
+              <label className="text-sm font-semibold text-slate-700">Price (£)</label>
               <input 
                 required 
                 type="number" 
