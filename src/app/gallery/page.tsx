@@ -83,7 +83,7 @@ export default function GalleryPage() {
           <Card
             key={item.id}
             className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-orange-300 shadow-[4px_4px_0px_#cc6200] cursor-pointer group"
-            onClick={() => setViewTarget(item)}
+            onClick={() => router.push(`/preview/${item.id}`)}
           >
             <div className="h-64 bg-gray-100 w-full flex items-center justify-center overflow-hidden relative">
               {item.image_url ? (
@@ -91,14 +91,14 @@ export default function GalleryPage() {
               ) : (
                 <span className="text-gray-400 font-semibold">No Image</span>
               )}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-200 flex items-center justify-center">
-                <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-[#0c2a50] text-xs font-black px-3 py-1.5 rounded-full shadow transition-opacity duration-200">
-                  {item.stl_url ? 'View 3D Model' : 'View Full Size'}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center">
+                <span className="opacity-0 group-hover:opacity-100 flex items-center gap-1.5 bg-white/95 text-[#0c2a50] text-xs font-black px-3 py-1.5 rounded-full shadow transition-opacity duration-200">
+                  <Expand size={11} /> Full 3D Preview
                 </span>
               </div>
               {item.stl_url && (
-                <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full pointer-events-none">
-                  <Box size={10} /> <span>3D</span>
+                <div className="absolute top-2 left-2 flex items-center gap-1 bg-blue-600/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  <Box size={9} /> 3D
                 </div>
               )}
             </div>

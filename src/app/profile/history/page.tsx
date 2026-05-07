@@ -240,52 +240,64 @@ export default function HistoryPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {generations.map((gen) => (
-                <Card key={gen.id} className="flex flex-col h-full hover:scale-105 transition-transform duration-300 border-2 border-transparent hover:border-blue-300 shadow-[6px_6px_0px_#1a4073]">
+                <Card key={gen.id} className="flex flex-col h-full border-2 border-transparent hover:border-blue-300 shadow-[6px_6px_0px_#1a4073] transition-all duration-200">
+                  {/* Entire image area → full preview */}
                   <div
                     className="h-56 bg-gradient-to-tr from-sky-100 to-white w-full border-b-2 border-slate-100 relative overflow-hidden flex items-center justify-center cursor-pointer group"
-                    onClick={() => setViewTarget(gen)}
+                    onClick={() => router.push(`/preview/${gen.id}`)}
                   >
                     {gen.image_url ? (
                       <img src={gen.image_url} alt={gen.prompt} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" />
                     ) : (
                       <span className="text-gray-400 font-bold tracking-widest uppercase">No Image</span>
                     )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
-                      <span className="opacity-0 group-hover:opacity-100 bg-white/90 text-[#0c2a50] text-xs font-black px-3 py-1.5 rounded-full shadow transition-opacity duration-200">
-                        View Details
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 flex items-center gap-1.5 bg-white/95 text-[#0c2a50] text-xs font-black px-3 py-1.5 rounded-full shadow transition-opacity duration-200">
+                        <Expand size={12} /> Full 3D Preview
                       </span>
                     </div>
                     <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-[#0c2a50] text-xs font-black px-3 py-1 rounded-full shadow-sm border border-gray-100">
                       {new Date(gen.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </div>
+                    {gen.stl_url && (
+                      <div className="absolute top-3 left-3 flex items-center gap-1 bg-blue-600/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        <Box size={9} /> 3D
+                      </div>
+                    )}
                   </div>
                   <CardContent className="p-5 flex-1 flex flex-col bg-white">
-                    <div className="mb-4 flex-grow">
+                    <div className="mb-3 flex-grow">
                       <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Prompt</p>
-                      <p className="text-[#1a4073] font-semibold text-base line-clamp-3 leading-snug">"{gen.prompt}"</p>
+                      <p className="text-[#1a4073] font-semibold text-base line-clamp-2 leading-snug">"{gen.prompt}"</p>
                     </div>
-                    <div className="flex flex-col gap-3 mt-auto pt-4 border-t-2 border-blue-50/50 border-dashed">
+                    <div className="flex flex-col gap-2 mt-auto pt-3 border-t-2 border-blue-50/50 border-dashed">
                       <Button
                         variant="primary"
-                        className="w-full justify-between px-5 font-bold shadow-md shadow-orange-500/20"
+                        className="w-full font-bold"
+                        onClick={() => router.push(`/preview/${gen.id}`)}
+                      >
+                        <Expand size={16} className="mr-2" /> Full 3D Preview
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between px-4 font-bold border-orange-300 text-orange-600 hover:bg-orange-50"
                         onClick={() => handleOrderPrint(gen)}
                       >
-                        <span className="flex items-center gap-2"><ShoppingBag size={18} /> Order Print</span>
-                        <span className="bg-orange-600 text-white rounded-md px-2 py-0.5 text-sm">+ Cart</span>
+                        <span className="flex items-center gap-2"><ShoppingBag size={16} /> Order Print</span>
                       </Button>
-                      <div className="grid grid-cols-2 gap-3">
-                        <Button variant="secondary" className="w-full text-sm py-2 shadow-sm shadow-blue-500/10" onClick={() => handleDownloadSTL(gen)}>
-                          <Download size={16} className="mr-2" /> STL
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button variant="secondary" className="w-full text-sm py-2" onClick={() => handleDownloadSTL(gen)}>
+                          <Download size={14} className="mr-1.5" /> STL
                         </Button>
-                        <Button variant="outline" className="w-full text-sm py-2 font-black border-blue-200" onClick={() => handleReuse(gen.prompt)}>
-                          <RefreshCw size={16} className="mr-2 text-blue-500" /> Reuse
+                        <Button variant="outline" className="w-full text-sm py-2 border-blue-200" onClick={() => handleReuse(gen.prompt)}>
+                          <RefreshCw size={14} className="mr-1.5 text-blue-500" /> Reuse
                         </Button>
                       </div>
                       <button
                         onClick={() => handleDelete(gen.id)}
-                        className="flex justify-center flex-row gap-1 items-center mt-2 mx-auto text-xs font-bold text-red-400 hover:text-red-600 active:scale-95 transition-all w-max py-1 px-3 rounded-full hover:bg-red-50"
+                        className="flex justify-center gap-1 items-center mt-1 mx-auto text-xs font-bold text-red-400 hover:text-red-600 transition-all w-max py-1 px-3 rounded-full hover:bg-red-50"
                       >
-                        <Trash2 size={12} /> <span className="uppercase tracking-wider">Delete Model</span>
+                        <Trash2 size={12} /> <span className="uppercase tracking-wider">Delete</span>
                       </button>
                     </div>
                   </CardContent>

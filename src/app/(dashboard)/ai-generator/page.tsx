@@ -334,11 +334,11 @@ export default function AIGeneratorPage() {
 
                 <div className="flex flex-col gap-3 w-full">
                   <Button
-                    variant="secondary"
-                    className="w-full font-bold bg-[#0c2a50] text-white hover:bg-[#1a4073]"
+                    variant="primary"
+                    className="w-full font-bold text-base py-3 bg-[#0c2a50] border-[#091e3a] shadow-[0_4px_0_#091e3a] hover:shadow-[0_6px_0_#091e3a]"
                     onClick={() => router.push(`/preview/${result.id}`)}
                   >
-                    <Expand className="mr-2 h-4 w-4" />
+                    <Expand className="mr-2 h-5 w-5" />
                     Full 3D Preview
                   </Button>
                   <Button variant="outline" className="w-full font-bold" disabled={!result.stl_url}
