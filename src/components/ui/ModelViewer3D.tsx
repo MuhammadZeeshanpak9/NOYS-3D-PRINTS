@@ -8,37 +8,55 @@ interface ModelViewer3DProps {
 }
 
 export function ModelViewer3D({ src, poster }: ModelViewer3DProps) {
-  const loaded = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!loaded.current) {
-      loaded.current = true;
-      import('@google/model-viewer').catch(() => {});
-    }
-  }, []);
+    const container = containerRef.current;
+    if (!container) return;
 
-  // Cast to any — model-viewer is a web component, not a known HTML element
-  const MV = 'model-viewer' as any;
+    let mv: HTMLElement | null = null;
+
+    // Import the library first, then create the element once it's registered
+    import('@google/model-viewer')
+      .then(() => {
+        if (!container) return;
+        mv = document.createElement('model-viewer');
+        mv.setAttribute('src', src);
+        if (poster) mv.setAttribute('poster', poster);
+        mv.setAttribute('camera-controls', '');
+        mv.setAttribute('auto-rotate', '');
+        mv.setAttribute('auto-rotate-delay', '500');
+        mv.setAttribute('shadow-intensity', '1');
+        mv.setAttribute('interaction-prompt', 'auto');
+        mv.setAttribute('loading', 'eager');
+        mv.style.cssText = [
+          'width:100%',
+          'height:100%',
+          'min-height:380px',
+          'background:#f3f4f6',
+          'border-radius:0.75rem',
+          'touch-action:none',
+          'outline:none',
+          '--poster-color:#f3f4f6',
+        ].join(';');
+        container.appendChild(mv);
+      })
+      .catch(() => {});
+
+    return () => {
+      if (mv && container.contains(mv)) container.removeChild(mv);
+    };
+  }, [src, poster]);
 
   return (
-    <MV
-      src={src}
-      poster={poster}
-      camera-controls=""
-      auto-rotate=""
-      auto-rotate-delay="0"
-      rotation-per-second="30deg"
-      shadow-intensity="1"
-      interaction-prompt="auto"
-      loading="eager"
+    <div
+      ref={containerRef}
       style={{
         width: '100%',
         height: '100%',
         minHeight: '380px',
         background: '#f3f4f6',
         borderRadius: '0.75rem',
-        touchAction: 'none',
-        outline: 'none',
       }}
     />
   );
