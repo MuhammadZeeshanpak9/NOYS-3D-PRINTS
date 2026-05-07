@@ -371,7 +371,7 @@ export default function HistoryPage() {
       {viewTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setViewTarget(null)}>
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -382,23 +382,25 @@ export default function HistoryPage() {
               </button>
             </div>
 
-            {/* Preview */}
-            <div className="relative bg-slate-50 min-h-[320px] flex items-center justify-center">
+            {/* Preview — NOT inside scrollable area so touch events reach model-viewer */}
+            <div className="relative bg-slate-50 flex items-center justify-center shrink-0">
               {viewTarget.stl_url ? (
-                <div className="w-full" style={{ height: 380 }}>
+                <div className="w-full" style={{ height: 360 }}>
                   <ModelViewer3D src={viewTarget.stl_url} poster={viewTarget.image_url ?? undefined} />
                   <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full pointer-events-none">
                     <Box size={12} />
-                    <span>Drag to rotate · Scroll to zoom</span>
+                    <span>Drag to rotate · Pinch/scroll to zoom</span>
                   </div>
                 </div>
               ) : viewTarget.image_url ? (
-                <img src={viewTarget.image_url} alt={viewTarget.prompt} className="max-h-[420px] w-full object-contain p-4" />
+                <img src={viewTarget.image_url} alt={viewTarget.prompt} className="max-h-[360px] w-full object-contain p-4" />
               ) : (
-                <p className="text-slate-400 font-bold">No preview available</p>
+                <p className="text-slate-400 font-bold py-16">No preview available</p>
               )}
             </div>
 
+            {/* Scrollable bottom section */}
+            <div className="overflow-y-auto">
             {/* Prompt + date */}
             <div className="px-6 py-4 border-b border-slate-100">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Prompt</p>
@@ -441,6 +443,7 @@ export default function HistoryPage() {
                 <Trash2 size={12} /> Delete Model
               </button>
             </div>
+            </div>{/* end scrollable section */}
           </div>
         </div>
       )}

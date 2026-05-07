@@ -129,7 +129,7 @@ export default function GalleryPage() {
           onClick={() => setViewTarget(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -140,19 +140,19 @@ export default function GalleryPage() {
               </button>
             </div>
 
-            {/* Preview */}
-            <div className="relative bg-slate-50 flex items-center justify-center overflow-hidden" style={{ minHeight: 340 }}>
+            {/* Preview — kept outside scroll so touch events reach model-viewer */}
+            <div className="relative bg-slate-50 flex items-center justify-center shrink-0">
               {viewTarget.stl_url ? (
-                <div className="w-full" style={{ height: 400 }}>
+                <div className="w-full" style={{ height: 360 }}>
                   <ModelViewer3D src={viewTarget.stl_url} poster={viewTarget.image_url ?? undefined} />
                   <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full pointer-events-none">
                     <Box size={12} />
-                    <span>Drag to rotate · Scroll to zoom</span>
+                    <span>Drag to rotate · Pinch/scroll to zoom</span>
                   </div>
                 </div>
               ) : viewTarget.image_url ? (
                 <div className="w-full flex flex-col items-center">
-                  <div className="overflow-auto w-full flex items-center justify-center" style={{ maxHeight: 420 }}>
+                  <div className="w-full flex items-center justify-center" style={{ maxHeight: 360, overflow: 'hidden' }}>
                     <img
                       src={viewTarget.image_url}
                       alt={viewTarget.prompt}
@@ -162,19 +162,11 @@ export default function GalleryPage() {
                     />
                   </div>
                   <div className="flex items-center gap-3 py-2 bg-white/80 w-full justify-center border-t border-slate-100">
-                    <button
-                      className="p-1.5 rounded-full hover:bg-slate-100 disabled:opacity-40"
-                      onClick={() => setImgZoom(z => Math.max(1, z - 0.5))}
-                      disabled={imgZoom <= 1}
-                    >
+                    <button className="p-1.5 rounded-full hover:bg-slate-100 disabled:opacity-40" onClick={() => setImgZoom(z => Math.max(1, z - 0.5))} disabled={imgZoom <= 1}>
                       <ZoomOut size={16} className="text-slate-500" />
                     </button>
                     <span className="text-xs font-semibold text-slate-500 w-10 text-center">{Math.round(imgZoom * 100)}%</span>
-                    <button
-                      className="p-1.5 rounded-full hover:bg-slate-100 disabled:opacity-40"
-                      onClick={() => setImgZoom(z => Math.min(3, z + 0.5))}
-                      disabled={imgZoom >= 3}
-                    >
+                    <button className="p-1.5 rounded-full hover:bg-slate-100 disabled:opacity-40" onClick={() => setImgZoom(z => Math.min(3, z + 0.5))} disabled={imgZoom >= 3}>
                       <ZoomIn size={16} className="text-slate-500" />
                     </button>
                     <span className="text-xs text-slate-400 ml-1">or click image to zoom</span>
@@ -185,6 +177,8 @@ export default function GalleryPage() {
               )}
             </div>
 
+            {/* Scrollable bottom: actions only */}
+            <div className="overflow-y-auto">
             {/* Actions */}
             <div className="px-6 py-5 flex flex-col gap-3">
               <Button
@@ -219,6 +213,7 @@ export default function GalleryPage() {
                 </Button>
               </div>
             </div>
+            </div>{/* end scrollable section */}
           </div>
         </div>
       )}

@@ -24,9 +24,12 @@ export function ModelViewer3D({ src, poster }: ModelViewer3DProps) {
     <MV
       src={src}
       poster={poster}
-      auto-rotate=""
       camera-controls=""
+      auto-rotate=""
+      auto-rotate-delay="0"
+      rotation-per-second="30deg"
       shadow-intensity="1"
+      interaction-prompt="auto"
       loading="eager"
       style={{
         width: '100%',
@@ -34,6 +37,8 @@ export function ModelViewer3D({ src, poster }: ModelViewer3DProps) {
         minHeight: '380px',
         background: '#f3f4f6',
         borderRadius: '0.75rem',
+        touchAction: 'none',
+        outline: 'none',
       }}
     />
   );
