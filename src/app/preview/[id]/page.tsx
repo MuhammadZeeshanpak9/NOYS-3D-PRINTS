@@ -152,15 +152,15 @@ export default function PreviewPage() {
       </header>
 
       {/* Main layout */}
-      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+      <div className="flex flex-col lg:flex-row flex-1" style={{ minHeight: 0 }}>
 
         {/* Viewer — takes most of the screen */}
-        <div className="flex-1 relative bg-[#111c2e] flex items-center justify-center" style={{ minHeight: 360 }}>
+        <div className="flex-1 relative bg-[#111c2e] flex items-center justify-center" style={{ minHeight: 420 }}>
 
           {has3D ? (
-            <div className="w-full h-full" style={{ minHeight: 400 }}>
+            <div className="absolute inset-0">
               <ModelViewer3D src={generation.stl_url!} />
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/60 text-white/80 text-xs px-4 py-2 rounded-full pointer-events-none select-none">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/60 text-white/80 text-xs px-4 py-2 rounded-full pointer-events-none select-none z-10">
                 <Box size={12} />
                 <span>Drag to rotate · Scroll to zoom · Two fingers to pan</span>
               </div>
