@@ -8,7 +8,7 @@ import { useToast } from '@/lib/toast/ToastContext';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/api/client';
 import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
-import { Download, ShoppingCart, RefreshCw, X, Box, ZoomIn, ZoomOut } from 'lucide-react';
+import { Download, ShoppingCart, RefreshCw, X, Box, ZoomIn, ZoomOut, Expand } from 'lucide-react';
 
 interface SavedGeneration {
   id: string;
@@ -181,6 +181,13 @@ export default function GalleryPage() {
             <div className="overflow-y-auto">
             {/* Actions */}
             <div className="px-6 py-5 flex flex-col gap-3">
+              <Button
+                variant="secondary"
+                className="w-full font-bold bg-[#0c2a50] text-white hover:bg-[#1a4073]"
+                onClick={() => { setViewTarget(null); router.push(`/preview/${viewTarget.id}`); }}
+              >
+                <Expand size={16} className="mr-2" /> Full 3D Preview
+              </Button>
               <Button
                 variant="primary"
                 className="w-full font-bold"

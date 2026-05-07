@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth/useAuth';
 import { useCart } from '@/lib/cart/CartContext';
 import { useToast } from '@/lib/toast/ToastContext';
 import { Modal } from '@/components/ui/Modal';
-import { Download, ShoppingBag, RefreshCw, Trash2, Wand2, Package, ExternalLink, Box, X } from 'lucide-react';
+import { Download, ShoppingBag, RefreshCw, Trash2, Wand2, Package, ExternalLink, Box, X, Expand } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
 
@@ -412,6 +412,13 @@ export default function HistoryPage() {
 
             {/* Actions */}
             <div className="px-6 py-5 flex flex-col gap-3">
+              <Button
+                variant="secondary"
+                className="w-full font-bold bg-[#0c2a50] text-white hover:bg-[#1a4073]"
+                onClick={() => { setViewTarget(null); router.push(`/preview/${viewTarget.id}`); }}
+              >
+                <Expand size={16} className="mr-2" /> Full 3D Preview
+              </Button>
               <Button
                 variant="primary"
                 className="w-full font-bold shadow-md shadow-orange-500/20"
