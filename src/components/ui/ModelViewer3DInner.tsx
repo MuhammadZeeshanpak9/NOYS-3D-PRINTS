@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF, Environment, Center, Html, useProgress } from '@react-three/drei';
 
@@ -39,34 +39,82 @@ function Model({ url }: { url: string }) {
   );
 }
 
-export function ModelViewer3DInner({ src }: Props) {
+// Catches errors from useGLTF / Environment so a broken or expired
+// model URL doesn't take down the whole page.
+class ModelErrorBoundary extends React.Component<
+  { fallback: React.ReactNode; children: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.error('[ModelViewer3D] failed to render 3D model:', error);
+  }
+
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children;
+  }
+}
+
+function FallbackOverlay({ poster }: { poster?: string }) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      gap: 12, padding: 24, textAlign: 'center',
+      background: poster ? '#0f172a' : '#f3f4f6',
+    }}>
+      {poster ? (
+        <img
+          src={poster}
+          alt="Preview"
+          style={{ maxWidth: '100%', maxHeight: '70%', objectFit: 'contain', borderRadius: 8, opacity: 0.9 }}
+        />
+      ) : null}
+      <p style={{ fontSize: 13, color: poster ? 'rgba(255,255,255,0.75)' : '#64748b', fontWeight: 600, margin: 0 }}>
+        3D model could not be loaded.
+      </p>
+      <p style={{ fontSize: 11, color: poster ? 'rgba(255,255,255,0.55)' : '#94a3b8', margin: 0 }}>
+        The link may have expired — try regenerating the model.
+      </p>
+    </div>
+  );
+}
+
+export function ModelViewer3DInner({ src, poster }: Props) {
   return (
     <div style={{ width: '100%', height: '100%', minHeight: 380, background: '#f3f4f6', borderRadius: '0.75rem', overflow: 'hidden', position: 'relative' }}>
-      <Canvas
-        camera={{ position: [0, 0.5, 3], fov: 45 }}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', touchAction: 'none' }}
-        gl={{ antialias: true }}
-      >
-        <ambientLight intensity={1.5} />
-        <directionalLight position={[5, 5, 5]} intensity={1} />
-        <directionalLight position={[-5, 3, -3]} intensity={0.4} />
+      <ModelErrorBoundary fallback={<FallbackOverlay poster={poster} />}>
+        <Canvas
+          camera={{ position: [0, 0.5, 3], fov: 45 }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', touchAction: 'none' }}
+          gl={{ antialias: true }}
+        >
+          <ambientLight intensity={1.5} />
+          <directionalLight position={[5, 5, 5]} intensity={1} />
+          <directionalLight position={[-5, 3, -3]} intensity={0.4} />
 
-        <Suspense fallback={<Loader />}>
-          <Model url={src} />
-          <Environment preset="studio" />
-        </Suspense>
+          <Suspense fallback={<Loader />}>
+            <Model url={src} />
+            <Environment preset="studio" />
+          </Suspense>
 
-        <OrbitControls
-          enablePan
-          enableZoom
-          enableRotate
-          autoRotate
-          autoRotateSpeed={1.5}
-          minDistance={0.5}
-          maxDistance={15}
-          makeDefault
-        />
-      </Canvas>
+          <OrbitControls
+            enablePan
+            enableZoom
+            enableRotate
+            autoRotate
+            autoRotateSpeed={1.5}
+            minDistance={0.5}
+            maxDistance={15}
+            makeDefault
+          />
+        </Canvas>
+      </ModelErrorBoundary>
     </div>
   );
 }
