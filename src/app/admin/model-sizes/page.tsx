@@ -111,7 +111,7 @@ export default function AdminModelSizesPage() {
   );
 }
 
-const inputCls = 'w-24 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300';
+const inputCls = 'w-24 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300';
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (

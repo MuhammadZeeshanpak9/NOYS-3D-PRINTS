@@ -47,6 +47,15 @@ body {
   min-height: 100vh;
 }
 
+/* Ensure form inputs always have readable dark text by default.
+   Plain element selector keeps specificity low so any Tailwind
+   text-* utility (e.g. text-white) still wins. */
+input,
+textarea,
+select {
+  color: rgb(15 23 42); /* slate-900 */
+}
+
 /* Custom Scrollbar Utility */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;

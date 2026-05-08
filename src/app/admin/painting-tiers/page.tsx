@@ -180,6 +180,6 @@ function Spinner() {
   return <div className="flex justify-center items-center min-h-[300px]"><Loader2 size={28} className="animate-spin text-slate-400" /></div>;
 }
 
-const input = 'w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white';
+const input = 'w-full px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white';
 const btnPrimary = 'flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-sm font-semibold rounded-lg transition-colors';
 const btnGhost = 'flex items-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-semibold rounded-lg transition-colors';
