@@ -398,7 +398,10 @@ export default function HistoryPage() {
             <div className="relative bg-slate-50 flex items-center justify-center shrink-0">
               {viewTarget.stl_url ? (
                 <div className="w-full" style={{ height: 360 }}>
-                  <ModelViewer3D src={viewTarget.stl_url} poster={viewTarget.image_url ?? undefined} />
+                  <ModelViewer3D
+                    src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/generations/${viewTarget.id}/model`}
+                    poster={viewTarget.image_url ?? undefined}
+                  />
                   <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full pointer-events-none">
                     <Box size={12} />
                     <span>Drag to rotate · Pinch/scroll to zoom</span>

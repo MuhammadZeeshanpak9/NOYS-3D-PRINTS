@@ -314,7 +314,10 @@ export default function AIGeneratorPage() {
                 <div className="flex-1 rounded-xl overflow-hidden relative min-h-[350px]">
                   {result.stl_url ? (
                     <>
-                      <ModelViewer3D src={result.stl_url} poster={result.image_url ?? undefined} />
+                      <ModelViewer3D
+                        src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/generations/${result.id}/model`}
+                        poster={result.image_url ?? undefined}
+                      />
                       <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full pointer-events-none">
                         <Box size={12} />
                         <span>Drag to rotate · Scroll to zoom</span>
