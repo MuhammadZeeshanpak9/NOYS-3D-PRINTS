@@ -28,20 +28,40 @@ function PaymentGatewayContent() {
 
   useEffect(() => {
     if (status === 'success') {
-      setIsSuccess(true);
-      success('Payment completed successfully!');
-      setTimeout(() => {
-        router.push('/profile');
-      }, 3000);
+      // Verify the Stripe session with our backend and apply the credit /
+      // subscription grant. This is webhook-independent so it works even
+      // when STRIPE_WEBHOOK_SECRET / the Stripe dashboard webhook is not
+      // configured. The endpoint is idempotent.
+      const sid = sessionId;
+      (async () => {
+        try {
+          if (sid) {
+            await apiClient.post('/payments/verify-session', { session_id: sid });
+          }
+          setIsSuccess(true);
+          success('Payment completed successfully!');
+        } catch (verifyErr: any) {
+          console.error('Session verify failed:', verifyErr);
+          // Still show success UX — Stripe says it's paid, but flag for support.
+          setIsSuccess(true);
+          error(
+            verifyErr.response?.data?.error
+              ? `Payment processed but credit update failed: ${verifyErr.response.data.error}. Please contact support.`
+              : 'Payment processed but we could not confirm your credits yet. They should appear shortly — contact support if not.'
+          );
+        } finally {
+          setTimeout(() => router.push('/profile'), 3000);
+        }
+      })();
       return;
     }
-    
+
     if (status === 'cancelled') {
       error('Payment was cancelled. Please try again.');
       router.push('/pricing');
       return;
     }
-  }, [status, router, error, success]);
+  }, [status, sessionId, router, error, success]);
 
   useEffect(() => {
     const fetchItemDetails = async () => {
