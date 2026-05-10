@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Upload } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/api/client';
 import { useToast } from '@/lib/toast/ToastContext';
+import { ProductMediaManager, MediaItem, uploadPendingMedia } from '@/components/admin/ProductMediaManager';
 
 interface Category {
   id: string;
@@ -27,8 +28,7 @@ export default function AddProductPage() {
     category_ids: [] as string[]
   });
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [media, setMedia] = useState<MediaItem[]>([]);
 
   useEffect(() => {
     fetchCategories();
@@ -60,21 +60,9 @@ export default function AddProductPage() {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.price || !formData.description) {
       toastError('Please fill in all required fields');
       return;
@@ -82,16 +70,8 @@ export default function AddProductPage() {
 
     setLoading(true);
     try {
-      let imageUrl = '';
-      
-      if (imageFile) {
-        const imageFormData = new FormData();
-        imageFormData.append('file', imageFile);
-        const uploadResponse = await apiClient.post('/upload/image', imageFormData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        imageUrl = uploadResponse.data.url;
-      }
+      const uploadedMedia = await uploadPendingMedia(media, apiClient);
+      const primaryImage = uploadedMedia.find(m => m.media_type === 'image');
 
       await apiClient.post('/products', {
         name: formData.name,
@@ -99,7 +79,8 @@ export default function AddProductPage() {
         price: parseFloat(formData.price),
         status: formData.status,
         category_ids: formData.category_ids,
-        image_url: imageUrl
+        image_url: primaryImage?.url ?? '',
+        media: uploadedMedia,
       });
 
       success('Product created successfully!');
@@ -217,36 +198,7 @@ export default function AddProductPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Product Image</label>
-            <div className="w-full">
-              {imagePreview ? (
-                <div className="relative inline-block">
-                  <img src={imagePreview} alt="Preview" className="max-h-48 rounded-lg" />
-                  <button
-                    type="button"
-                    onClick={() => { setImageFile(null); setImagePreview(null); }}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    ×
-                  </button>
-                </div>
-              ) : (
-                <label className="w-full flex justify-center px-6 pt-10 pb-12 border-2 border-slate-300 border-dashed rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
-                  <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-                  <div className="space-y-2 text-center">
-                    <div className="mx-auto h-12 w-12 text-slate-400 group-hover:text-blue-500 transition-colors flex items-center justify-center bg-slate-100 rounded-full mb-4">
-                      <Upload size={24} />
-                    </div>
-                    <div className="text-sm text-slate-600 font-medium">
-                      <span className="text-blue-600 hover:underline">Upload a file</span> or drag and drop
-                    </div>
-                    <p className="text-xs text-slate-500">PNG, JPG, WEBP up to 5MB</p>
-                  </div>
-                </label>
-              )}
-            </div>
-          </div>
+          <ProductMediaManager media={media} onChange={setMedia} />
 
         </div>
 

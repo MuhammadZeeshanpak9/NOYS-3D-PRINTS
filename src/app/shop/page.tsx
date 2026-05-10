@@ -45,7 +45,9 @@ function ShopContent() {
     return () => clearInterval(interval);
   }, [activeCategorySlug]);
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (e: React.MouseEvent, product: any) => {
+    e.preventDefault();
+    e.stopPropagation();
     addToCart({
       id: product.id,
       name: product.name,
@@ -129,32 +131,60 @@ function ShopContent() {
 
         {products.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
-              <Card key={product.id} className="flex flex-col h-full hover:scale-105 transition-transform duration-300 border-2 border-transparent hover:border-blue-200">
-                <div className="h-48 bg-blue-50 w-full flex items-center justify-center">
-                  {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} className="object-cover w-full h-full" />
-                  ) : (
-                    <p className="text-blue-300 font-medium">Product Image</p>
-                  )}
-                </div>
-                <CardContent className="p-5 flex-1 flex flex-col">
-                  <h3 className="font-bold text-gray-800 mb-2 leading-tight">{product.name}</h3>
-                  <p className="text-xl font-black text-orange-500 mb-4">£{Number(product.price).toFixed(2)}</p>
-                  
-                  <div className="mt-auto">
-                    <Button 
-                      variant="primary" 
-                      className="w-full relative overflow-hidden group"
-                      onClick={() => handleAddToCart(product)}
-                    >
-                      <span className="relative z-10">Add to Cart</span>
-                      <div className="absolute inset-0 h-full w-full border-white/20 border-b-4 z-0 pointer-events-none group-active:border-none"></div>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {products.map((product) => {
+              const hasVideo = Array.isArray(product.media)
+                && product.media.some((m: any) => m?.media_type === 'video');
+              const photoCount = Array.isArray(product.media)
+                ? product.media.filter((m: any) => m?.media_type === 'image').length
+                : (product.image_url ? 1 : 0);
+
+              return (
+                <Link
+                  key={product.id}
+                  href={`/shop/${product.id}`}
+                  className="block focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-xl"
+                >
+                  <Card className="flex flex-col h-full hover:scale-105 transition-transform duration-300 border-2 border-transparent hover:border-blue-200">
+                    <div className="relative h-48 bg-blue-50 w-full flex items-center justify-center overflow-hidden">
+                      {product.image_url ? (
+                        <img src={product.image_url} alt={product.name} className="object-cover w-full h-full" />
+                      ) : (
+                        <p className="text-blue-300 font-medium">Product Image</p>
+                      )}
+                      {(photoCount > 1 || hasVideo) && (
+                        <div className="absolute top-2 right-2 flex gap-1.5">
+                          {photoCount > 1 && (
+                            <span className="bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
+                              +{photoCount - 1} photos
+                            </span>
+                          )}
+                          {hasVideo && (
+                            <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                              360° Video
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <CardContent className="p-5 flex-1 flex flex-col">
+                      <h3 className="font-bold text-gray-800 mb-2 leading-tight">{product.name}</h3>
+                      <p className="text-xl font-black text-orange-500 mb-4">£{Number(product.price).toFixed(2)}</p>
+
+                      <div className="mt-auto">
+                        <Button
+                          variant="primary"
+                          className="w-full relative overflow-hidden group"
+                          onClick={(e) => handleAddToCart(e, product)}
+                        >
+                          <span className="relative z-10">Add to Cart</span>
+                          <div className="absolute inset-0 h-full w-full border-white/20 border-b-4 z-0 pointer-events-none group-active:border-none"></div>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
         ) : (
           <div className="py-20 text-center bg-white rounded-xl border-2 border-dashed border-blue-200">
