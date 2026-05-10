@@ -72,7 +72,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center pt-16 pb-20 px-4 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center pt-24 sm:pt-28 pb-20 px-4 relative overflow-hidden">
 
 
       <Modal 

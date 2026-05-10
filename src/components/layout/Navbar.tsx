@@ -41,6 +41,25 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Lock body scroll while the mobile drawer is open so the page behind
+  // the backdrop doesn't scroll on wheel/touch — and so the visible page
+  // doesn't shift while the user swipes inside the drawer.
+  useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [isOpen]);
+
+  // Close the drawer automatically when the route changes (e.g. tapping a
+  // link inside the drawer triggers navigation; we don't want it to stay
+  // open on the new page).
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
   if (pathname?.startsWith('/admin') || pathname?.startsWith('/preview')) return null;
 
   return (
