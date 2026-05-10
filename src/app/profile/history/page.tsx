@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth/useAuth';
 import { useCart } from '@/lib/cart/CartContext';
 import { useToast } from '@/lib/toast/ToastContext';
 import { Modal } from '@/components/ui/Modal';
-import { Download, ShoppingBag, RefreshCw, Trash2, Wand2, Package, ExternalLink, Box, X, Expand } from 'lucide-react';
+import { ShoppingBag, RefreshCw, Trash2, Wand2, Package, ExternalLink, Box, X, Expand } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
 
@@ -135,14 +135,6 @@ export default function HistoryPage() {
       image: item.image_url
     });
     success('Custom Print added to your cart!');
-  };
-
-  const handleDownloadSTL = (item: GenerationItem) => {
-    if (item.stl_url) {
-      window.open(item.stl_url, '_blank');
-    } else {
-      toastError('STL file not available yet');
-    }
   };
 
   const handleReuse = (prompt: string) => {
@@ -285,14 +277,9 @@ export default function HistoryPage() {
                       >
                         <span className="flex items-center gap-2"><ShoppingBag size={16} /> Order Print</span>
                       </Button>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button variant="secondary" className="w-full text-sm py-2" onClick={() => handleDownloadSTL(gen)}>
-                          <Download size={14} className="mr-1.5" /> STL
-                        </Button>
-                        <Button variant="outline" className="w-full text-sm py-2 border-blue-200" onClick={() => handleReuse(gen.prompt)}>
-                          <RefreshCw size={14} className="mr-1.5 text-blue-500" /> Reuse
-                        </Button>
-                      </div>
+                      <Button variant="outline" className="w-full text-sm py-2 border-blue-200" onClick={() => handleReuse(gen.prompt)}>
+                        <RefreshCw size={14} className="mr-1.5 text-blue-500" /> Reuse
+                      </Button>
                       <button
                         onClick={() => handleDelete(gen.id)}
                         className="flex justify-center gap-1 items-center mt-1 mx-auto text-xs font-bold text-red-400 hover:text-red-600 transition-all w-max py-1 px-3 rounded-full hover:bg-red-50"
@@ -441,23 +428,13 @@ export default function HistoryPage() {
               >
                 <ShoppingBag size={18} className="mr-2" /> Order Print
               </Button>
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  disabled={!viewTarget.stl_url}
-                  onClick={() => handleDownloadSTL(viewTarget)}
-                >
-                  <Download size={16} className="mr-2" /> Download STL
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full border-blue-200"
-                  onClick={() => { handleReuse(viewTarget.prompt); setViewTarget(null); }}
-                >
-                  <RefreshCw size={16} className="mr-2 text-blue-500" /> Reuse Prompt
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                className="w-full border-blue-200"
+                onClick={() => { handleReuse(viewTarget.prompt); setViewTarget(null); }}
+              >
+                <RefreshCw size={16} className="mr-2 text-blue-500" /> Reuse Prompt
+              </Button>
               <button
                 onClick={() => { handleDelete(viewTarget.id); setViewTarget(null); }}
                 className="flex justify-center items-center gap-1.5 mt-1 text-xs font-bold text-red-400 hover:text-red-600 transition-colors"

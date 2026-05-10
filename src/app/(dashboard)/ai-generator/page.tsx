@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
-import { AlertCircle, Wand2, Download, Save, CheckCircle, ShoppingCart, XCircle, Box, Expand } from 'lucide-react';
+import { AlertCircle, Wand2, Save, CheckCircle, ShoppingCart, XCircle, Box, Expand } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 import { useAuth } from '@/lib/auth/useAuth';
 import { useToast } from '@/lib/toast/ToastContext';
@@ -343,11 +343,6 @@ export default function AIGeneratorPage() {
                   >
                     <Expand className="mr-2 h-5 w-5" />
                     Full 3D Preview
-                  </Button>
-                  <Button variant="outline" className="w-full font-bold" disabled={!result.stl_url}
-                    onClick={() => result.stl_url && window.open(result.stl_url, '_blank')}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Download 3D Model
                   </Button>
                   <Button
                     variant="primary"

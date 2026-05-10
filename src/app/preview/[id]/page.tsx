@@ -9,7 +9,7 @@ import apiClient from '@/lib/api/client';
 import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
 import { Button } from '@/components/ui/Button';
 import {
-  ArrowLeft, Download, ShoppingCart, RefreshCw, Save,
+  ArrowLeft, ShoppingCart, RefreshCw, Save,
   CheckCircle, ZoomIn, ZoomOut, RotateCcw, Box, Image as ImageIcon,
   Calendar, Cpu,
 } from 'lucide-react';
@@ -139,16 +139,7 @@ export default function PreviewPage() {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {generation.stl_url && (
-            <button
-              onClick={() => window.open(generation.stl_url!, '_blank')}
-              className="hidden sm:flex items-center gap-1.5 text-white/70 hover:text-white text-xs font-semibold transition-colors"
-            >
-              <Download size={14} /> STL
-            </button>
-          )}
-        </div>
+        <div className="flex items-center gap-2" />
       </header>
 
       {/* Main layout */}
@@ -254,15 +245,6 @@ export default function PreviewPage() {
                 onClick={handleOrder}
               >
                 <ShoppingCart size={18} className="mr-2" /> Order This Print
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full border-white/20 text-white hover:bg-white/10"
-                disabled={!generation.stl_url}
-                onClick={() => generation.stl_url && window.open(generation.stl_url, '_blank')}
-              >
-                <Download size={16} className="mr-2" /> Download STL
               </Button>
 
               <Button

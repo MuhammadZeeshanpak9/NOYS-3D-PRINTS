@@ -8,7 +8,7 @@ import { useToast } from '@/lib/toast/ToastContext';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/api/client';
 import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
-import { Download, ShoppingCart, RefreshCw, X, Box, ZoomIn, ZoomOut, Expand } from 'lucide-react';
+import { ShoppingCart, RefreshCw, X, Box, ZoomIn, ZoomOut, Expand } from 'lucide-react';
 
 interface SavedGeneration {
   id: string;
@@ -202,26 +202,16 @@ export default function GalleryPage() {
               >
                 <ShoppingCart size={18} className="mr-2" /> Order This Print
               </Button>
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  disabled={!viewTarget.stl_url}
-                  onClick={() => viewTarget.stl_url && window.open(viewTarget.stl_url, '_blank')}
-                >
-                  <Download size={16} className="mr-2" /> Download STL
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full border-blue-200"
-                  onClick={() => {
-                    router.push(`/ai-generator?prompt=${encodeURIComponent(viewTarget.prompt)}`);
-                    setViewTarget(null);
-                  }}
-                >
-                  <RefreshCw size={16} className="mr-2 text-blue-500" /> Reuse Prompt
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                className="w-full border-blue-200"
+                onClick={() => {
+                  router.push(`/ai-generator?prompt=${encodeURIComponent(viewTarget.prompt)}`);
+                  setViewTarget(null);
+                }}
+              >
+                <RefreshCw size={16} className="mr-2 text-blue-500" /> Reuse Prompt
+              </Button>
             </div>
             </div>{/* end scrollable section */}
           </div>
