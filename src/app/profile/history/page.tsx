@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/auth/useAuth';
-import { useCart } from '@/lib/cart/CartContext';
 import { useToast } from '@/lib/toast/ToastContext';
 import { Modal } from '@/components/ui/Modal';
 import { ShoppingBag, RefreshCw, Trash2, Wand2, Package, ExternalLink, Box, X, Expand } from 'lucide-react';
@@ -79,7 +78,6 @@ function resolveImageUrl(url: string | null) {
 export default function HistoryPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
-  const { addToCart } = useCart();
   const { success, error: toastError } = useToast();
 
   const [activeTab, setActiveTab] = useState<'designs' | 'orders'>('designs');
@@ -127,14 +125,15 @@ export default function HistoryPage() {
   };
 
   const handleOrderPrint = (item: GenerationItem) => {
-    addToCart({
-      id: `print_${item.id}`,
-      name: `Custom Print: ${item.prompt.substring(0, 15)}...`,
-      price: 24.99,
-      quantity: 1,
-      image: item.image_url
-    });
-    success('Custom Print added to your cart!');
+    // Don't add directly to cart — route the customer through the builder
+    // so they pick a size / finish / paint options first, same flow as the
+    // preview page and gallery modal. The builder reads this hint from
+    // sessionStorage and prefills the reference image.
+    sessionStorage.setItem('noys_builder_preselect', JSON.stringify({
+      generationId: item.id,
+      imageUrl: item.image_url,
+    }));
+    router.push('/builder?source=ai');
   };
 
   const handleReuse = (prompt: string) => {
