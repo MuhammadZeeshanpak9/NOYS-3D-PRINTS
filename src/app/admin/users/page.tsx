@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Edit2, Trash2, Shield, User } from 'lucide-react';
+import { Trash2, Shield, User, Coins, X } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 import { useToast } from '@/lib/toast/ToastContext';
 
@@ -15,10 +15,18 @@ interface User {
   created_at: string;
 }
 
+type CreditMode = 'set' | 'add' | 'subtract';
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const { error, success } = useToast();
+
+  // Credit-edit modal state
+  const [creditUser, setCreditUser] = useState<User | null>(null);
+  const [creditMode, setCreditMode] = useState<CreditMode>('add');
+  const [creditAmount, setCreditAmount] = useState<string>('');
+  const [savingCredits, setSavingCredits] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -57,6 +65,44 @@ export default function AdminUsersPage() {
     }
   };
 
+  const openCreditModal = (user: User) => {
+    setCreditUser(user);
+    setCreditMode('add');
+    setCreditAmount('');
+  };
+
+  const closeCreditModal = () => {
+    setCreditUser(null);
+    setCreditAmount('');
+  };
+
+  const handleSaveCredits = async () => {
+    if (!creditUser) return;
+    const parsed = Number(creditAmount);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      error('Please enter a valid number');
+      return;
+    }
+
+    const current = creditUser.credits || 0;
+    let newCredits = current;
+    if (creditMode === 'set') newCredits = parsed;
+    else if (creditMode === 'add') newCredits = current + parsed;
+    else if (creditMode === 'subtract') newCredits = Math.max(0, current - parsed);
+
+    setSavingCredits(true);
+    try {
+      await apiClient.put(`/admin/users/${creditUser.id}`, { credits: newCredits });
+      setUsers(users.map(u => u.id === creditUser.id ? { ...u, credits: newCredits } : u));
+      success(`Credits updated: ${current} → ${newCredits}`);
+      closeCreditModal();
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to update credits');
+    } finally {
+      setSavingCredits(false);
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     if (!dateStr) return 'N/A';
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -83,6 +129,95 @@ export default function AdminUsersPage() {
         </div>
         <span className="text-sm text-slate-500">{users.length} total users</span>
       </div>
+
+      {creditUser && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={closeCreditModal}>
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-5" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <Coins size={20} className="text-amber-500" /> Adjust Credits
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  {creditUser.full_name || creditUser.email}
+                </p>
+              </div>
+              <button onClick={closeCreditModal} className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
+              <span className="text-slate-600">Current balance: </span>
+              <span className="font-bold text-amber-700">{creditUser.credits || 0} credits</span>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-700">Action</label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['add', 'subtract', 'set'] as CreditMode[]).map(m => (
+                  <button
+                    key={m}
+                    onClick={() => setCreditMode(m)}
+                    className={`px-3 py-2 rounded-lg text-sm font-semibold border-2 transition-colors ${
+                      creditMode === m
+                        ? 'bg-blue-500 border-blue-500 text-white'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
+                    }`}
+                  >
+                    {m === 'add' ? 'Add' : m === 'subtract' ? 'Subtract' : 'Set to'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-700">
+                {creditMode === 'set' ? 'New balance' : 'Amount'}
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={creditAmount}
+                onChange={e => setCreditAmount(e.target.value)}
+                placeholder="e.g. 10"
+                autoFocus
+                className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:outline-none text-slate-900 font-semibold"
+              />
+              {creditAmount && Number.isFinite(Number(creditAmount)) && (
+                <p className="text-xs text-slate-500">
+                  New balance will be:{' '}
+                  <span className="font-bold text-slate-700">
+                    {creditMode === 'set'
+                      ? Number(creditAmount)
+                      : creditMode === 'add'
+                        ? (creditUser.credits || 0) + Number(creditAmount)
+                        : Math.max(0, (creditUser.credits || 0) - Number(creditAmount))}{' '}
+                    credits
+                  </span>
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={closeCreditModal}
+                disabled={savingCredits}
+                className="flex-1 px-4 py-2.5 border-2 border-slate-200 rounded-lg font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveCredits}
+                disabled={savingCredits || !creditAmount}
+                className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold text-white disabled:opacity-50"
+              >
+                {savingCredits ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -135,6 +270,13 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => openCreditModal(user)}
+                          className="text-slate-400 hover:text-amber-600 p-1.5 rounded hover:bg-amber-50 transition-colors"
+                          title="Adjust credits"
+                        >
+                          <Coins size={16} />
+                        </button>
                         {user.role !== 'admin' && (
                           <button
                             onClick={() => handleUpdateRole(user.id, 'admin')}
