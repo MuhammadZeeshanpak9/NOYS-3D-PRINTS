@@ -8,6 +8,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   image?: string;
+  colour?: { name: string; hex_code: string };
 }
 
 interface CartContextType {
@@ -47,11 +48,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addToCart = (newItem: CartItem) => {
     setItems((currentItems) => {
-      const existingItem = currentItems.find(item => item.id === newItem.id);
+      const isSameEntry = (item: CartItem) =>
+        item.id === newItem.id && (item.colour?.name ?? '') === (newItem.colour?.name ?? '');
+      const existingItem = currentItems.find(isSameEntry);
       if (existingItem) {
-        return currentItems.map(item => 
-          item.id === newItem.id 
-            ? { ...item, quantity: item.quantity + (newItem.quantity || 1) } 
+        return currentItems.map(item =>
+          isSameEntry(item)
+            ? { ...item, quantity: item.quantity + (newItem.quantity || 1) }
             : item
         );
       }

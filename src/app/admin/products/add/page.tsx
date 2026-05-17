@@ -2,11 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/api/client';
 import { useToast } from '@/lib/toast/ToastContext';
 import { ProductMediaManager, MediaItem, uploadPendingMedia } from '@/components/admin/ProductMediaManager';
+
+interface ColourEntry {
+  name: string;
+  hex_code: string;
+}
 
 interface Category {
   id: string;
@@ -29,6 +34,7 @@ export default function AddProductPage() {
   });
 
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [colours, setColours] = useState<ColourEntry[]>([]);
 
   useEffect(() => {
     fetchCategories();
@@ -81,6 +87,7 @@ export default function AddProductPage() {
         category_ids: formData.category_ids,
         image_url: primaryImage?.url ?? '',
         media: uploadedMedia,
+        colours: colours.filter(c => c.name.trim() && c.hex_code),
       });
 
       success('Product created successfully!');
@@ -199,6 +206,54 @@ export default function AddProductPage() {
           </div>
 
           <ProductMediaManager media={media} onChange={setMedia} />
+
+          {/* ── Colour Options ──────────────────────────────────── */}
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700">Print Colours</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Customers will choose one before adding to cart</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setColours(prev => [...prev, { name: '', hex_code: '#3b82f6' }])}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                <Plus size={16} /> Add Colour
+              </button>
+            </div>
+            {colours.length === 0 && (
+              <p className="text-sm text-slate-400 italic">No colours added — customers can add to cart without selecting a colour.</p>
+            )}
+            <div className="space-y-3">
+              {colours.map((c, idx) => (
+                <div key={idx} className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={c.hex_code}
+                    onChange={e => setColours(prev => prev.map((x, i) => i === idx ? { ...x, hex_code: e.target.value } : x))}
+                    className="w-10 h-10 rounded-lg border border-slate-300 cursor-pointer p-0.5"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Colour name (e.g. Bone White)"
+                    value={c.name}
+                    onChange={e => setColours(prev => prev.map((x, i) => i === idx ? { ...x, name: e.target.value } : x))}
+                    className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  />
+                  <span className="text-xs text-slate-400 font-mono w-16">{c.hex_code}</span>
+                  <button
+                    type="button"
+                    onClick={() => setColours(prev => prev.filter((_, i) => i !== idx))}
+                    className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                    aria-label="Remove colour"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
         </div>
 

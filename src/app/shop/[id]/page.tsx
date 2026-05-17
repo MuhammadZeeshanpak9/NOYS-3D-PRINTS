@@ -16,6 +16,13 @@ interface MediaRow {
   sort_order: number;
 }
 
+interface ColourOption {
+  id: string;
+  name: string;
+  hex_code: string;
+  sort_order: number;
+}
+
 interface Product {
   id: string;
   name: string;
@@ -24,6 +31,7 @@ interface Product {
   image_url: string | null;
   is_active: boolean;
   media: MediaRow[];
+  colours: ColourOption[];
 }
 
 export default function ProductDetailPage() {
@@ -35,6 +43,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [selectedColour, setSelectedColour] = useState<ColourOption | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,6 +53,7 @@ export default function ProductDetailPage() {
         if (!cancelled) {
           setProduct(res.data);
           setActiveIdx(0);
+          setSelectedColour(null);
         }
       } catch (err) {
         if (!cancelled) {
@@ -70,16 +80,20 @@ export default function ProductDetailPage() {
 
   const active = gallery[activeIdx];
 
+  const hasColours = (product?.colours?.length ?? 0) > 0;
+  const canAddToCart = !hasColours || selectedColour !== null;
+
   const handleAddToCart = () => {
-    if (!product) return;
+    if (!product || !canAddToCart) return;
     addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       quantity: 1,
       image: product.image_url || gallery.find(m => m.media_type === 'image')?.url || undefined,
+      colour: selectedColour ? { name: selectedColour.name, hex_code: selectedColour.hex_code } : undefined,
     });
-    success(`Added ${product.name} to your cart!`);
+    success(`Added ${product.name}${selectedColour ? ` (${selectedColour.name})` : ''} to your cart!`);
   };
 
   if (loading) {
@@ -182,12 +196,43 @@ export default function ProductDetailPage() {
             </div>
           )}
 
+          {hasColours && (
+            <div className="bg-white border border-blue-100 rounded-2xl p-5 shadow-sm">
+              <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">
+                Print Colour
+              </h2>
+              <div className="flex flex-wrap gap-3">
+                {product!.colours.map((c) => (
+                  <button
+                    key={c.id}
+                    title={c.name}
+                    onClick={() => setSelectedColour(c)}
+                    className={`w-9 h-9 rounded-full border-2 transition-all ${
+                      selectedColour?.id === c.id
+                        ? 'border-blue-500 ring-2 ring-blue-300 scale-110'
+                        : 'border-slate-300 hover:border-blue-400'
+                    }`}
+                    style={{ backgroundColor: c.hex_code }}
+                    aria-label={c.name}
+                    aria-pressed={selectedColour?.id === c.id}
+                  />
+                ))}
+              </div>
+              {selectedColour ? (
+                <p className="mt-2 text-sm font-semibold text-blue-600">{selectedColour.name}</p>
+              ) : (
+                <p className="mt-2 text-sm text-slate-400">Please select a colour</p>
+              )}
+            </div>
+          )}
+
           <div className="flex flex-col gap-3">
             <Button
               variant="primary"
               size="lg"
-              className="w-full font-black"
+              className={`w-full font-black ${!canAddToCart ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={handleAddToCart}
+              disabled={!canAddToCart}
             >
               <ShoppingCart size={20} className="mr-2" />
               Add to Cart
