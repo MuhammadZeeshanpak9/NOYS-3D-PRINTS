@@ -17,6 +17,10 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: "Noys 3D Prints | A World Made in Plastic",
   description: "High-detail 3D printed miniatures, custom designs, and hobby-ready models — made to order.",
+  icons: {
+    icon: '/icon',
+    apple: '/apple-icon',
+  },
 };
 
 export default function RootLayout({
