@@ -325,7 +325,7 @@ export default function AIGeneratorPage() {
                     </>
                   ) : result.image_url ? (
                     <div className="relative w-full h-full bg-gray-100 border border-gray-200 shadow-inner flex items-center justify-center min-h-[300px]">
-                      <img src={result.image_url} alt="Generated 3D Model Preview" className="object-cover h-full w-full" />
+                      <img src={result.image_url} alt="Generated 3D Model Preview" className="object-cover h-full w-full" style={{ filter: 'grayscale(100%)' }} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-4">
                         <p className="text-white font-bold text-lg drop-shadow-md">Preview Ready</p>
                       </div>

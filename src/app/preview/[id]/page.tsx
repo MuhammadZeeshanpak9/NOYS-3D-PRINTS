@@ -180,6 +180,7 @@ export default function PreviewPage() {
                   maxHeight: '80vh',
                   objectFit: 'contain',
                   pointerEvents: 'none',
+                  filter: 'grayscale(100%)',
                 }}
               />
               {/* Zoom controls */}

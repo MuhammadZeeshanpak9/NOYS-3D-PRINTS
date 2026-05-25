@@ -1,8 +1,9 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
+import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Environment, Center, Html, useProgress } from '@react-three/drei';
+import { OrbitControls, useGLTF, Center, Html, useProgress } from '@react-three/drei';
 
 interface Props {
   src: string;
@@ -30,8 +31,25 @@ function Loader() {
   );
 }
 
+const GREY_MATERIAL = new THREE.MeshStandardMaterial({
+  color: new THREE.Color('#808080'),
+  roughness: 1.0,
+  metalness: 0.0,
+});
+
 function Model({ url }: { url: string }) {
   const { scene } = useGLTF(url);
+
+  useEffect(() => {
+    scene.traverse((child: any) => {
+      if (child.isMesh) {
+        child.material = GREY_MATERIAL;
+        child.castShadow = false;
+        child.receiveShadow = false;
+      }
+    });
+  }, [scene]);
+
   return (
     <Center>
       <primitive object={scene} />
@@ -72,7 +90,7 @@ function FallbackOverlay({ poster }: { poster?: string }) {
         <img
           src={poster}
           alt="Preview"
-          style={{ maxWidth: '100%', maxHeight: '70%', objectFit: 'contain', borderRadius: 8, opacity: 0.9 }}
+          style={{ maxWidth: '100%', maxHeight: '70%', objectFit: 'contain', borderRadius: 8, opacity: 0.9, filter: 'grayscale(100%)' }}
         />
       ) : null}
       <p style={{ fontSize: 13, color: poster ? 'rgba(255,255,255,0.75)' : '#64748b', fontWeight: 600, margin: 0 }}>
@@ -94,13 +112,13 @@ export function ModelViewer3DInner({ src, poster }: Props) {
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', touchAction: 'none' }}
           gl={{ antialias: true }}
         >
-          <ambientLight intensity={1.5} />
-          <directionalLight position={[5, 5, 5]} intensity={1} />
-          <directionalLight position={[-5, 3, -3]} intensity={0.4} />
+          <ambientLight intensity={2.5} />
+          <directionalLight position={[5, 5, 5]} intensity={0.8} />
+          <directionalLight position={[-5, 3, -3]} intensity={0.5} />
+          <directionalLight position={[0, -5, 0]} intensity={0.3} />
 
           <Suspense fallback={<Loader />}>
             <Model url={src} />
-            <Environment preset="studio" />
           </Suspense>
 
           <OrbitControls

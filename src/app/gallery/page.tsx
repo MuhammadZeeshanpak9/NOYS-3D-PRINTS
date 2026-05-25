@@ -87,7 +87,7 @@ export default function GalleryPage() {
           >
             <div className="h-64 bg-gray-100 w-full flex items-center justify-center overflow-hidden relative">
               {item.image_url ? (
-                <img src={item.image_url} alt={item.prompt} className="object-cover h-full w-full group-hover:scale-105 transition-transform duration-300" />
+                <img src={item.image_url} alt={item.prompt} className="object-cover h-full w-full group-hover:scale-105 transition-transform duration-300" style={{ filter: 'grayscale(100%)' }} />
               ) : (
                 <span className="text-gray-400 font-semibold">No Image</span>
               )}

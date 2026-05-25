@@ -238,7 +238,7 @@ export default function HistoryPage() {
                     onClick={() => router.push(`/preview/${gen.id}`)}
                   >
                     {gen.image_url ? (
-                      <img src={gen.image_url} alt={gen.prompt} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" />
+                      <img src={gen.image_url} alt={gen.prompt} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300" style={{ filter: 'grayscale(100%)' }} />
                     ) : (
                       <span className="text-gray-400 font-bold tracking-widest uppercase">No Image</span>
                     )}
