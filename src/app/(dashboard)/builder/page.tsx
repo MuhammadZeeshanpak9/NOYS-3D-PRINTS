@@ -650,14 +650,14 @@ export default function BuilderPage() {
                             <button
                               onClick={() => updateExtra(color, -1)}
                               disabled={qty === 0}
-                              className="w-7 h-7 rounded-full border-2 border-[#1a4073] flex items-center justify-center disabled:opacity-30 hover:bg-blue-50"
+                              className="w-7 h-7 rounded-full border-2 border-[#1a4073] text-[#0c2a50] flex items-center justify-center disabled:opacity-30 hover:bg-blue-50"
                             >
                               <Minus size={12} />
                             </button>
                             <span className="font-black text-[#0c2a50] w-4 text-center">{qty}</span>
                             <button
                               onClick={() => updateExtra(color, 1)}
-                              className="w-7 h-7 rounded-full border-2 border-[#1a4073] flex items-center justify-center hover:bg-blue-50"
+                              className="w-7 h-7 rounded-full border-2 border-[#1a4073] text-[#0c2a50] flex items-center justify-center hover:bg-blue-50"
                             >
                               <Plus size={12} />
                             </button>
