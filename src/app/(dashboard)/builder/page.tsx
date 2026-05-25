@@ -320,7 +320,7 @@ export default function BuilderPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-sky-50 py-8 px-4">
+    <div className="min-h-[calc(100vh-64px)] bg-sky-50 pt-24 pb-8 px-4">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}

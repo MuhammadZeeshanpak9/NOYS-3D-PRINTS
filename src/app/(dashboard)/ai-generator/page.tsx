@@ -201,7 +201,7 @@ export default function AIGeneratorPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] px-4 pt-24 pb-8 sm:p-8 max-w-6xl mx-auto">
+    <div className="min-h-[calc(100vh-64px)] px-4 pt-24 pb-8 sm:px-8 sm:pb-8 max-w-6xl mx-auto">
       <div className="text-center mb-8">
         <h1 className="text-3xl sm:text-4xl font-black text-[#0c2a50]">AI 3D Model Generator</h1>
         <p className="text-[#1a4073] mt-2 max-w-2xl mx-auto text-lg">
