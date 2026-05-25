@@ -38,17 +38,23 @@ export default function CartPage() {
               <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row gap-6 items-center">
 
                 {}
-                <div className="w-full sm:w-32 h-32 bg-blue-100 rounded-xl flex items-center justify-center shrink-0 border-2 border-blue-200 shadow-inner">
-                  <span className="text-xs font-bold text-blue-400 capitalize">{item.name.substring(0, 15)}...</span>
+                <div className="w-full sm:w-32 h-32 bg-blue-100 rounded-xl overflow-hidden shrink-0 border-2 border-blue-200 shadow-inner">
+                  {item.image ? (
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-xs font-bold text-blue-400 capitalize text-center px-2">{item.name}</span>
+                    </div>
+                  )}
                 </div>
 
                 {}
                 <div className="flex-1 text-center sm:text-left">
                   <h3 className="text-xl font-bold text-[#0c2a50] mb-2">{item.name}</h3>
                   {item.colour && (
-                    <div className="flex items-center gap-2 justify-center sm:justify-start mb-1">
-                      <span className="w-4 h-4 rounded-full border border-gray-300 shrink-0" style={{ background: item.colour.hex_code }} />
-                      <span className="text-sm font-semibold text-[#1a4073]">{item.colour.name}</span>
+                    <div className="flex items-center gap-2 justify-center sm:justify-start mb-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 w-fit mx-auto sm:mx-0">
+                      <span className="w-5 h-5 rounded-full border-2 border-white shadow-sm shrink-0" style={{ background: item.colour.hex_code }} />
+                      <span className="text-sm font-bold text-[#1a4073]">{item.colour.name}</span>
                     </div>
                   )}
                   <p className="text-lg font-black text-orange-500">£{item.price.toFixed(2)}</p>
