@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, ShoppingBag, Image as ImageIcon, MessageSquare, Info, Star, CreditCard, ShoppingCart, Cuboid } from 'lucide-react';
@@ -23,6 +23,8 @@ const navLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const lastScrollY = useRef(0);
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
@@ -35,9 +37,22 @@ export function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const currentY = window.scrollY;
+      setIsScrolled(currentY > 20);
+      if (currentY < 80) {
+        // Always show near the top of the page
+        setIsHidden(false);
+      } else if (currentY > lastScrollY.current + 6) {
+        // Scrolling down — hide the navbar
+        setIsHidden(true);
+        setIsOpen(false);
+      } else if (currentY < lastScrollY.current - 6) {
+        // Scrolling up — reveal the navbar
+        setIsHidden(false);
+      }
+      lastScrollY.current = currentY;
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -65,7 +80,7 @@ export function Navbar() {
   return (
     <header className={`fixed top-0 left-0 right-0 z-[100] h-16 transition-all duration-300 bg-sky-50/95 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none ${
       isScrolled ? 'md:bg-sky-50/95 md:backdrop-blur-md md:shadow-sm md:border-b-2 md:border-blue-100/50' : ''
-    }`}>
+    } ${isHidden ? '-translate-y-full' : 'translate-y-0'}`}>
       {}
       <nav className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {}
