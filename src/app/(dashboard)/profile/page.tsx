@@ -45,11 +45,22 @@ export default function ProfilePage() {
         const shippingAddress = userData.shipping_address || '';
         
         if (shippingAddress && typeof shippingAddress === 'string') {
-          const parts = shippingAddress.split(',').map(p => p.trim());
-          setAddress1(parts[0] || '');
-          setCity(parts[1] || '');
-          setPostalCode(parts[2] || '');
-          if (parts[3]) setCountry(parts[3]);
+          // New format uses | separator: "address1|address2|city|postalCode|country"
+          // Legacy format uses commas (no address2 support).
+          if (shippingAddress.includes('|')) {
+            const parts = shippingAddress.split('|');
+            setAddress1(parts[0] || '');
+            setAddress2(parts[1] || '');
+            setCity(parts[2] || '');
+            setPostalCode(parts[3] || '');
+            setCountry(parts[4] || '');
+          } else {
+            const parts = shippingAddress.split(',').map(p => p.trim());
+            setAddress1(parts[0] || '');
+            setCity(parts[1] || '');
+            setPostalCode(parts[2] || '');
+            setCountry(parts[3] || '');
+          }
         } else if (shippingAddress && typeof shippingAddress === 'object') {
           setAddress1(shippingAddress.address || '');
           setCity(shippingAddress.city || '');
@@ -69,7 +80,7 @@ export default function ProfilePage() {
     setLoading(true);
     
     try {
-      const shippingAddress = `${address1}${address2 ? ', ' + address2 : ''}, ${city}, ${postalCode}${country ? ', ' + country : ''}`;
+      const shippingAddress = [address1, address2, city, postalCode, country].join('|');
       
       await apiClient.put('/auth/me', {
         name: name,

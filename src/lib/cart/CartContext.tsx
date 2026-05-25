@@ -14,8 +14,8 @@ export interface CartItem {
 interface CartContextType {
   items: CartItem[];
   addToCart: (item: CartItem) => void;
-  removeFromCart: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  removeFromCart: (id: string, colour?: { name: string; hex_code: string }) => void;
+  updateQuantity: (id: string, quantity: number, colour?: { name: string; hex_code: string }) => void;
   clearCart: () => void;
   itemCount: number;
   cartTotal: number;
@@ -62,15 +62,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const removeFromCart = (id: string) => {
-    setItems((currentItems) => currentItems.filter(item => item.id !== id));
+  const removeFromCart = (id: string, colour?: { name: string; hex_code: string }) => {
+    setItems((currentItems) => currentItems.filter(item => {
+      if (item.id !== id) return true;
+      if (colour) return (item.colour?.name ?? '') !== colour.name;
+      return false;
+    }));
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
-    setItems((currentItems) => 
-      currentItems.map(item => 
-        item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
-      )
+  const updateQuantity = (id: string, quantity: number, colour?: { name: string; hex_code: string }) => {
+    setItems((currentItems) =>
+      currentItems.map(item => {
+        if (item.id !== id) return item;
+        if (colour && (item.colour?.name ?? '') !== colour.name) return item;
+        return { ...item, quantity: Math.max(1, quantity) };
+      })
     );
   };
 

@@ -38,12 +38,6 @@ function ShopContent() {
     };
     
     fetchData();
-
-    const interval = setInterval(() => {
-      fetchData();
-    }, 3000);
-    
-    return () => clearInterval(interval);
   }, [activeCategorySlug]);
 
   const handleAddToCart = (e: React.MouseEvent, product: any) => {

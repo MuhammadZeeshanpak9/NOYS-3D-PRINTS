@@ -701,7 +701,7 @@ export default function BuilderPage() {
                     {(imagePreview || selectedGeneration?.image_url) && (
                       <div className="rounded-2xl overflow-hidden border-4 border-[#1a4073] shadow-[4px_4px_0px_#1a4073] aspect-video flex items-center justify-center bg-gray-50">
                         <img
-                          src={imagePreview ?? resolveImageUrl(selectedGeneration!.image_url)}
+                          src={imagePreview ?? resolveImageUrl(selectedGeneration?.image_url ?? '')}
                           alt="Reference"
                           className="object-contain max-h-48 max-w-full"
                         />
