@@ -6,12 +6,13 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useCart } from '@/lib/cart/CartContext';
 import { useToast } from '@/lib/toast/ToastContext';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import apiClient from '@/lib/api/client';
 
 function ShopContent() {
   const { addToCart } = useCart();
   const { success } = useToast();
+  const router = useRouter();
   const searchParams = useSearchParams();
   
   const [products, setProducts] = useState<any[]>([]);
@@ -48,12 +49,16 @@ function ShopContent() {
   const handleAddToCart = (e: React.MouseEvent, product: any) => {
     e.preventDefault();
     e.stopPropagation();
+    if (Array.isArray(product.colours) && product.colours.length > 0) {
+      router.push(`/shop/${product.id}`);
+      return;
+    }
     addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       quantity: 1,
-      image: product.image_url || null
+      image: product.image_url || undefined
     });
     success(`Added ${product.name} to your cart!`);
   };
