@@ -105,17 +105,17 @@ function FallbackOverlay({ poster }: { poster?: string }) {
 
 export function ModelViewer3DInner({ src, poster }: Props) {
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: 380, background: '#f3f4f6', borderRadius: '0.75rem', overflow: 'hidden', position: 'relative' }}>
+    <div style={{ width: '100%', height: '100%', minHeight: 380, background: '#c8c8c8', borderRadius: '0.75rem', overflow: 'hidden', position: 'relative' }}>
       <ModelErrorBoundary fallback={<FallbackOverlay poster={poster} />}>
         <Canvas
           camera={{ position: [0, 0.5, 3], fov: 45 }}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', touchAction: 'none' }}
           gl={{ antialias: true }}
         >
-          <ambientLight intensity={2.5} />
-          <directionalLight position={[5, 5, 5]} intensity={0.8} />
+          <ambientLight intensity={1.0} />
+          <directionalLight position={[5, 5, 5]} intensity={1.2} />
           <directionalLight position={[-5, 3, -3]} intensity={0.5} />
-          <directionalLight position={[0, -5, 0]} intensity={0.3} />
+          <directionalLight position={[0, -5, 0]} intensity={0.2} />
 
           <Suspense fallback={<Loader />}>
             <Model url={src} />
