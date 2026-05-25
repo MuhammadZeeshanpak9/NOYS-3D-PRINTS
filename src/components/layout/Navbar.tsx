@@ -63,8 +63,8 @@ export function Navbar() {
   if (pathname?.startsWith('/admin') || pathname?.startsWith('/preview')) return null;
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-[100] h-16 transition-all duration-300 ${
-      isScrolled ? 'bg-sky-50/95 backdrop-blur-md shadow-sm border-b-2 border-blue-100/50' : 'bg-transparent'
+    <header className={`fixed top-0 left-0 right-0 z-[100] h-16 transition-all duration-300 bg-sky-50/95 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none ${
+      isScrolled ? 'md:bg-sky-50/95 md:backdrop-blur-md md:shadow-sm md:border-b-2 md:border-blue-100/50' : ''
     }`}>
       {}
       <nav className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -114,20 +114,20 @@ export function Navbar() {
             <div className="flex items-center gap-4">
               <Link href="/profile" className="hidden sm:block text-xs font-bold text-[#0a2342] hover:text-primary uppercase tracking-tighter">My Account</Link>
               <Link href="/profile/history" className="hidden sm:block text-xs font-bold text-[#0a2342] hover:text-primary uppercase tracking-tighter">My Generations</Link>
-              <Button 
-                variant="primary" 
-                size="sm" 
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={handleLogout}
-                className="font-black h-9 px-5 shadow-lg shadow-primary/20"
+                className="hidden sm:block font-black h-9 px-5 shadow-lg shadow-primary/20"
               >
                 Sign Out
               </Button>
             </div>
           ) : (
-            <Link href="/login">
-              <Button 
-                variant="primary" 
-                size="sm" 
+            <Link href="/login" className="hidden sm:block">
+              <Button
+                variant="primary"
+                size="sm"
                 className="font-black h-9 px-5 shadow-lg shadow-primary/20"
               >
                 Sign In / Register
@@ -165,7 +165,7 @@ export function Navbar() {
                 </button>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 overflow-y-auto flex-1 -mx-2 px-2">
                 {navLinks.map((link) => {
                   const isActive = pathname === link.href;
                   return (
