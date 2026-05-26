@@ -23,4 +23,16 @@ apiClient.interceptors.request.use(
   }
 );
 
+// Builds the URL for the GLB proxy endpoint with the JWT in a query
+// parameter, since useGLTF / browser GET requests can't attach the
+// Authorization header that the proxy requires.
+export function getGenerationModelUrl(generationId: string): string {
+  const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+  const token =
+    (typeof window !== 'undefined' &&
+      (Cookies.get('jwt_token') || localStorage.getItem('jwt_token'))) ||
+    '';
+  return `${base}/generations/${generationId}/model?token=${encodeURIComponent(token)}`;
+}
+
 export default apiClient;

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/useAuth';
 import { useToast } from '@/lib/toast/ToastContext';
 import { useCart } from '@/lib/cart/CartContext';
-import apiClient from '@/lib/api/client';
+import apiClient, { getGenerationModelUrl } from '@/lib/api/client';
 import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
 import { Button } from '@/components/ui/Button';
 import {
@@ -151,7 +151,7 @@ export default function PreviewPage() {
           {has3D ? (
             <div className="absolute inset-0">
               <ModelViewer3D
-                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/generations/${generation.id}/model`}
+                src={getGenerationModelUrl(generation.id)}
                 poster={generation.image_url ?? undefined}
               />
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/60 text-white/80 text-xs px-4 py-2 rounded-full pointer-events-none select-none z-10">

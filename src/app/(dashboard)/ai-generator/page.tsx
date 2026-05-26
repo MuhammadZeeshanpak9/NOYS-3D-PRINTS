@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
 import { AlertCircle, Wand2, Save, CheckCircle, ShoppingCart, XCircle, Box, Expand } from 'lucide-react';
-import apiClient from '@/lib/api/client';
+import apiClient, { getGenerationModelUrl } from '@/lib/api/client';
 import { useAuth } from '@/lib/auth/useAuth';
 import { useToast } from '@/lib/toast/ToastContext';
 import { useRouter } from 'next/navigation';
@@ -315,7 +315,7 @@ export default function AIGeneratorPage() {
                   {result.stl_url ? (
                     <>
                       <ModelViewer3D
-                        src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/generations/${result.id}/model`}
+                        src={getGenerationModelUrl(result.id)}
                         poster={result.image_url ?? undefined}
                       />
                       <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full pointer-events-none">

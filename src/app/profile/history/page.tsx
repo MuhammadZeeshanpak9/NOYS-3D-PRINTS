@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth/useAuth';
 import { useToast } from '@/lib/toast/ToastContext';
 import { Modal } from '@/components/ui/Modal';
 import { ShoppingBag, RefreshCw, Trash2, Wand2, Package, ExternalLink, Box, X, Expand } from 'lucide-react';
-import apiClient from '@/lib/api/client';
+import apiClient, { getGenerationModelUrl } from '@/lib/api/client';
 import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
 
 interface GenerationItem {
@@ -385,7 +385,7 @@ export default function HistoryPage() {
               {viewTarget.stl_url ? (
                 <div className="w-full" style={{ height: 360 }}>
                   <ModelViewer3D
-                    src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/generations/${viewTarget.id}/model`}
+                    src={getGenerationModelUrl(viewTarget.id)}
                     poster={viewTarget.image_url ?? undefined}
                   />
                   <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 text-white text-xs px-2.5 py-1 rounded-full pointer-events-none">
