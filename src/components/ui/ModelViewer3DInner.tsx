@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Center, Html, useProgress } from '@react-three/drei';
+import { OrbitControls, useGLTF, Center, Html, useProgress, Environment } from '@react-three/drei';
 
 interface Props {
   src: string;
@@ -33,7 +33,7 @@ function Loader() {
 
 const GREY_MATERIAL = new THREE.MeshStandardMaterial({
   color: new THREE.Color('#808080'),
-  roughness: 1.0,
+  roughness: 0.65,
   metalness: 0.0,
 });
 
@@ -110,12 +110,13 @@ export function ModelViewer3DInner({ src, poster }: Props) {
         <Canvas
           camera={{ position: [0, 0.5, 3], fov: 45 }}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', touchAction: 'none' }}
-          gl={{ antialias: true }}
+          gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}
         >
-          <ambientLight intensity={1.0} />
-          <directionalLight position={[5, 5, 5]} intensity={1.2} />
-          <directionalLight position={[-5, 3, -3]} intensity={0.5} />
-          <directionalLight position={[0, -5, 0]} intensity={0.2} />
+          <ambientLight intensity={0.25} />
+          <directionalLight position={[5, 5, 5]} intensity={0.8} />
+          <directionalLight position={[-5, 3, -3]} intensity={0.3} />
+
+          <Environment preset="studio" />
 
           <Suspense fallback={<Loader />}>
             <Model url={src} />
