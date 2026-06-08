@@ -156,83 +156,84 @@ export function Navbar() {
         </div>
       </nav>
 
-      {}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[110] md:hidden"
-            />
-            <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-72 max-w-[88vw] bg-white z-[120] md:hidden flex flex-col p-6 shadow-2xl"
-            >
-              <div className="flex items-center justify-between mb-12">
-                <span className="font-black text-2xl tracking-tighter text-[#0a2342]">NOYS <span className="text-primary italic">3D</span></span>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-2 rounded-full bg-gray-100 text-[#0a2342]"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              <div className="space-y-2 overflow-y-auto flex-1 -mx-2 px-2">
-                {navLinks.map((link) => {
-                  const isActive = pathname === link.href;
-                  return (
-                    <Link
-                      key={link.name}
-                      href={link.href}
-                      onClick={() => setIsOpen(false)}
-                      className={`flex items-center gap-4 px-4 py-4 rounded-2xl text-xl font-black uppercase transition-all ${
-                        isActive
-                          ? 'bg-primary/10 text-primary'
-                          : 'text-[#0a2342] hover:bg-gray-50'
-                      }`}
-                    >
-                      {link.name}
-                    </Link>
-                  );
-                })}
-              </div>
-
-              <div className="mt-auto pt-8 border-t border-gray-100 space-y-4">
-                {isAuthenticated ? (
-                  <div className="space-y-3">
-                    <Link href="/profile" onClick={() => setIsOpen(false)} className="block">
-                      <Button variant="outline" className="w-full font-bold border-gray-200">My Account</Button>
-                    </Link>
-                    <Link href="/profile/history" onClick={() => setIsOpen(false)} className="block">
-                      <Button variant="outline" className="w-full font-bold border-gray-200 text-blue-600">My Generations</Button>
-                    </Link>
-                    <Button 
-                      variant="outline" 
-                      className="w-full font-bold border-red-200 text-red-500 hover:bg-red-50"
-                      onClick={() => { handleLogout(); setIsOpen(false); }}
-                    >
-                      Log Out
-                    </Button>
-                  </div>
-                ) : (
-                  <Link href="/login" onClick={() => setIsOpen(false)} className="block">
-                    <Button variant="primary" className="w-full font-black">
-                      Sign In / Register
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </header>
+
+    {/* Drawer rendered outside <header> so its z-index is not capped by the header's stacking context */}
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[110] md:hidden"
+          />
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-y-0 left-0 w-72 max-w-[88vw] bg-white z-[120] md:hidden flex flex-col p-6 shadow-2xl"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <span className="font-black text-2xl tracking-tighter text-[#0a2342]">NOYS <span className="text-primary italic">3D</span></span>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 rounded-full bg-gray-100 text-[#0a2342]"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-1 overflow-y-auto flex-1">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-4 px-4 py-3 rounded-2xl text-base font-black uppercase transition-all ${
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-[#0a2342] hover:bg-gray-50'
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="mt-auto pt-6 border-t border-gray-100 space-y-3">
+              {isAuthenticated ? (
+                <div className="space-y-3">
+                  <Link href="/profile" onClick={() => setIsOpen(false)} className="block">
+                    <Button variant="outline" className="w-full font-bold border-gray-200">My Account</Button>
+                  </Link>
+                  <Link href="/profile/history" onClick={() => setIsOpen(false)} className="block">
+                    <Button variant="outline" className="w-full font-bold border-gray-200 text-blue-600">My Generations</Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    className="w-full font-bold border-red-200 text-red-500 hover:bg-red-50"
+                    onClick={() => { handleLogout(); setIsOpen(false); }}
+                  >
+                    Log Out
+                  </Button>
+                </div>
+              ) : (
+                <Link href="/login" onClick={() => setIsOpen(false)} className="block">
+                  <Button variant="primary" className="w-full font-black">
+                    Sign In / Register
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
