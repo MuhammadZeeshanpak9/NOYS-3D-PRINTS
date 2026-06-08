@@ -78,6 +78,7 @@ export function Navbar() {
   if (pathname?.startsWith('/admin') || pathname?.startsWith('/preview')) return null;
 
   return (
+    <>
     <header className={`fixed top-0 left-0 right-0 z-[100] h-16 transition-all duration-300 bg-white border-b border-blue-100 md:border-b-0 md:bg-transparent md:backdrop-blur-none ${
       isScrolled ? 'md:bg-sky-50/95 md:backdrop-blur-md md:shadow-sm md:border-b-2 md:border-blue-100/50' : ''
     } ${isHidden ? '-translate-y-full' : 'translate-y-0'}`}>
@@ -235,5 +236,6 @@ export function Navbar() {
         </>
       )}
     </AnimatePresence>
+    </>
   );
 }
