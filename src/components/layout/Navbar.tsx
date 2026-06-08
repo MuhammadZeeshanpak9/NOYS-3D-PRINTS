@@ -78,18 +78,22 @@ export function Navbar() {
   if (pathname?.startsWith('/admin') || pathname?.startsWith('/preview')) return null;
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-[100] h-16 transition-all duration-300 bg-sky-50/95 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none ${
+    <header className={`fixed top-0 left-0 right-0 z-[100] h-16 transition-all duration-300 bg-white border-b border-blue-100 md:border-b-0 md:bg-transparent md:backdrop-blur-none ${
       isScrolled ? 'md:bg-sky-50/95 md:backdrop-blur-md md:shadow-sm md:border-b-2 md:border-blue-100/50' : ''
     } ${isHidden ? '-translate-y-full' : 'translate-y-0'}`}>
-      {}
       <nav className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        {}
+        {/* Mobile: hamburger */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden p-2 text-[#0a2342] hover:bg-white/10 rounded-xl transition-colors"
+          className="md:hidden p-2 text-[#0a2342] hover:bg-blue-50 rounded-xl transition-colors"
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
+
+        {/* Mobile: brand logo in center */}
+        <Link href="/" className="md:hidden absolute left-1/2 -translate-x-1/2 font-black text-xl tracking-tighter text-[#0a2342]">
+          NOYS <span className="text-primary italic">3D</span>
+        </Link>
 
         {}
         <ul className="hidden md:flex items-center gap-6">

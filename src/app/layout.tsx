@@ -33,7 +33,7 @@ export default function RootLayout({
       lang="en"
       className={`${nunito.variable} font-sans h-full antialiased`}
     >
-      <body className={`${nunito.variable} font-sans min-h-screen flex flex-col relative z-0 antialiased`}>
+      <body suppressHydrationWarning className={`${nunito.variable} font-sans min-h-screen flex flex-col relative z-0 antialiased`}>
         <ToastProvider>
           <CartProvider>
             <AnimatedBackground />
