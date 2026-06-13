@@ -46,6 +46,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, isMounted]);
 
+  // Clear the cart when a user logs out (dispatched by useAuth.logout) so
+  // cart contents never leak to the next person on a shared device.
+  useEffect(() => {
+    const handleLogout = () => setItems([]);
+    window.addEventListener('noys-logout', handleLogout);
+    return () => window.removeEventListener('noys-logout', handleLogout);
+  }, []);
+
   const addToCart = (newItem: CartItem) => {
     setItems((currentItems) => {
       const isSameEntry = (item: CartItem) =>

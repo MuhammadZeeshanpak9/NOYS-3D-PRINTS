@@ -43,6 +43,11 @@ export const useAuth = () => {
     Cookies.remove('jwt_token');
     localStorage.removeItem('jwt_token');
     clearStore();
+    // Empty the cart so one user's items don't carry over to the next
+    // person on a shared device. CartContext listens for this event.
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('noys-logout'));
+    }
   };
 
   return { user, token, isLoading, isAuthenticated: !!user, login, logout };
