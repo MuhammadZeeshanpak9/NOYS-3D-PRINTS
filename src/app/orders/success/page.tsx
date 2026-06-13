@@ -1,15 +1,19 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Check, Loader2 } from 'lucide-react';
+import { useCart } from '@/lib/cart/CartContext';
+import apiClient from '@/lib/api/client';
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const { clearCart } = useCart();
   const [orderId, setOrderId] = useState<string | null>(null);
+
+  const isShop = searchParams.get('kind') === 'shop';
 
   useEffect(() => {
     // Order ID comes from URL param (set by backend success_url) or sessionStorage
@@ -18,6 +22,18 @@ function SuccessContent() {
     const id = urlOrderId || storedOrderId || null;
     setOrderId(id);
     if (storedOrderId) sessionStorage.removeItem('noys_last_order_id');
+
+    if (isShop) {
+      // Webhook-independent safety net: confirm the Stripe session and apply
+      // fulfilment even if the webhook is delayed. Idempotent server-side.
+      const sessionId = searchParams.get('session_id');
+      if (sessionId) {
+        apiClient.post('/payments/verify-session', { session_id: sessionId }).catch(() => {});
+      }
+      // Payment succeeded — safe to empty the cart now.
+      clearCart();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   return (
@@ -30,7 +46,9 @@ function SuccessContent() {
         <div>
           <h1 className="text-3xl font-black text-[#0c2a50] mb-2">Payment Successful!</h1>
           <p className="text-gray-600 font-semibold">
-            Your custom model order has been placed. We'll review your image and contact you before production begins.
+            {isShop
+              ? "Your order has been placed and paid. We're preparing it now and will email you when it ships."
+              : "Your custom model order has been placed. We'll review your image and contact you before production begins."}
           </p>
         </div>
 
@@ -42,7 +60,9 @@ function SuccessContent() {
         )}
 
         <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 text-sm font-semibold text-amber-800">
-          Your order is now <strong>In Review</strong>. You'll receive a confirmation email shortly.
+          {isShop
+            ? <>Your order is now <strong>Processing</strong>. A confirmation email is on its way.</>
+            : <>Your order is now <strong>In Review</strong>. You'll receive a confirmation email shortly.</>}
         </div>
 
         <div className="flex flex-col gap-3">
@@ -51,9 +71,9 @@ function SuccessContent() {
               View My Orders
             </Button>
           </Link>
-          <Link href="/builder">
+          <Link href={isShop ? '/shop' : '/builder'}>
             <Button variant="outline" className="w-full">
-              Place Another Order
+              {isShop ? 'Continue Shopping' : 'Place Another Order'}
             </Button>
           </Link>
         </div>

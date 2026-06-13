@@ -5,17 +5,16 @@ import { useCart } from '@/lib/cart/CartContext';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/lib/toast/ToastContext';
-import { CreditCard, CheckCircle2 } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import apiClient from '@/lib/api/client';
 import { useAuth } from '@/lib/auth/useAuth';
 
 export default function CheckoutPage() {
-  const { items, cartTotal, clearCart } = useCart();
-  const { error, success } = useToast();
+  const { items, cartTotal } = useCart();
+  const { error } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
   
   const [shipping, setShipping] = useState({
@@ -100,8 +99,8 @@ export default function CheckoutPage() {
         quantity: item.quantity,
         image: item.image
       }));
-      
-      const response = await apiClient.post('/orders', {
+
+      const response = await apiClient.post('/orders/checkout', {
         items: orderItems,
         shipping_address: {
           first_name: shipping.first_name,
@@ -113,36 +112,28 @@ export default function CheckoutPage() {
           country: shipping.country,
         }
       });
-      
-      if (response.data.id) {
-        clearCart();
-        setIsSuccess(true);
-        success('Order placed successfully!');
+
+      const { checkout_url, order_id } = response.data;
+
+      if (checkout_url) {
+        // Redirect to Stripe's secure hosted payment page. The cart is
+        // cleared on the success page (after payment), so it survives a
+        // cancelled payment.
+        sessionStorage.setItem('noys_last_order_id', order_id);
+        window.location.href = checkout_url;
+        return;
+      }
+
+      // Stripe not configured (dev/test) — order already activated server-side.
+      if (order_id) {
+        window.location.href = `/orders/success?order_id=${order_id}&kind=shop`;
       }
     } catch (err: any) {
       console.error('Checkout failed', err);
       error(err.response?.data?.error || 'Order failed to process. Please try again.');
-    } finally {
       setIsProcessing(false);
     }
   };
-
-  if (isSuccess) {
-    return (
-      <div className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center pt-24 pb-20 px-4">
-        <div className="bg-green-50 p-6 rounded-full border-4 border-[#1a4073] shadow-[4px_4px_0px_#1a4073] mb-6 animate-bounce">
-          <CheckCircle2 size={64} className="text-green-500" />
-        </div>
-        <h1 className="text-4xl font-black text-[#0c2a50] mb-4 text-center">Order Confirmed!</h1>
-        <p className="text-[#1a4073] mb-8 text-center max-w-md text-lg">
-          Your miniatures are being prepped. We'll email you the tracking details soon!
-        </p>
-        <Link href="/">
-          <Button variant="primary" size="lg">Continue Shopping</Button>
-        </Link>
-      </div>
-    );
-  }
 
   if (items.length === 0) {
     return (
@@ -212,31 +203,16 @@ export default function CheckoutPage() {
             <CardContent className="p-6 sm:p-8 bg-gradient-to-br from-white to-orange-50/30">
               <h2 className="text-2xl font-black text-[#0c2a50] mb-6 flex items-center gap-3">
                 <span className="bg-orange-100 text-orange-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
-                Payment Options
+                Payment
               </h2>
-              
-              <div className="bg-blue-50/50 p-6 rounded-2xl border-2 border-blue-200 mb-6 flex items-center gap-4">
-                <CreditCard className="text-blue-500 shrink-0" size={32} />
-                <div>
-                  <h4 className="font-extrabold text-[#0a2342]">Secure Payment</h4>
-                  <p className="text-sm text-[#1a4073]">Your payment information is encrypted and processed securely.</p>
-                </div>
-              </div>
 
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-sm font-bold text-[#1a4073]">Card Number</label>
-                  <input required type="text" maxLength={19} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="0000 0000 0000 0000" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-sm font-bold text-[#1a4073]">Expiry Date</label>
-                    <input required type="text" maxLength={5} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="MM/YY" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-bold text-[#1a4073]">CVV</label>
-                    <input required type="text" maxLength={4} className="w-full px-4 py-3 rounded-xl border border-gray-300 text-blue-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" placeholder="123" />
-                  </div>
+              <div className="bg-blue-50/50 p-6 rounded-2xl border-2 border-blue-200 flex items-start gap-4">
+                <CreditCard className="text-blue-500 shrink-0 mt-0.5" size={32} />
+                <div>
+                  <h4 className="font-extrabold text-[#0a2342]">Secure Payment via Stripe</h4>
+                  <p className="text-sm text-[#1a4073]">
+                    When you place your order, you'll be redirected to our secure Stripe payment page to enter your card details. Your payment information never touches our servers.
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -268,7 +244,7 @@ export default function CheckoutPage() {
                 className="w-full h-14 text-lg animate-pulse"
                 isLoading={isProcessing}
               >
-                {isProcessing ? 'Processing...' : 'Place Order'}
+                {isProcessing ? 'Processing...' : 'Continue to Payment'}
               </Button>
             </CardContent>
           </Card>
