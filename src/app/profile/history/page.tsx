@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/auth/useAuth';
 import { useToast } from '@/lib/toast/ToastContext';
 import { Modal } from '@/components/ui/Modal';
-import { ShoppingBag, RefreshCw, Trash2, Wand2, Package, ExternalLink, Box, X, Expand } from 'lucide-react';
+import { ShoppingBag, RefreshCw, Trash2, Wand2, Package, ExternalLink, Box, X, Expand, ShoppingCart } from 'lucide-react';
 import apiClient, { getGenerationModelUrl } from '@/lib/api/client';
 import { ModelViewer3D } from '@/components/ui/ModelViewer3D';
 
@@ -32,6 +32,22 @@ interface CustomOrder {
   size_label: string;
   finish_label: string;
   shipping_address: string;
+  created_at: string;
+}
+
+interface ShopOrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+}
+
+interface ShopOrder {
+  id: string;
+  status: string;
+  items: ShopOrderItem[];
+  total: number;
   created_at: string;
 }
 
@@ -64,6 +80,22 @@ const REVIEW_STYLES: Record<string, string> = {
   rejected: 'bg-red-50 text-red-700 border-red-200',
 };
 
+const SHOP_STATUS_STYLES: Record<string, string> = {
+  awaiting_payment: 'bg-amber-50 text-amber-700 border-amber-200',
+  processing: 'bg-blue-50 text-blue-700 border-blue-200',
+  shipped: 'bg-teal-50 text-teal-700 border-teal-200',
+  delivered: 'bg-green-50 text-green-700 border-green-200',
+  cancelled: 'bg-red-50 text-red-700 border-red-200',
+};
+
+const SHOP_STATUS_LABELS: Record<string, string> = {
+  awaiting_payment: 'Awaiting Payment',
+  processing: 'Processing',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+};
+
 function getApiBase() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
   return apiUrl.replace(/\/api\/v1\/?$/, '');
@@ -80,9 +112,10 @@ export default function HistoryPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const { success, error: toastError } = useToast();
 
-  const [activeTab, setActiveTab] = useState<'designs' | 'orders'>('designs');
+  const [activeTab, setActiveTab] = useState<'designs' | 'orders' | 'shop'>('designs');
   const [generations, setGenerations] = useState<GenerationItem[]>([]);
   const [customOrders, setCustomOrders] = useState<CustomOrder[]>([]);
+  const [shopOrders, setShopOrders] = useState<ShopOrder[]>([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -102,9 +135,10 @@ export default function HistoryPage() {
 
   const fetchAll = async () => {
     try {
-      const [genRes, ordersRes] = await Promise.allSettled([
+      const [genRes, ordersRes, shopRes] = await Promise.allSettled([
         apiClient.get('/generations'),
         apiClient.get('/custom-orders'),
+        apiClient.get('/orders'),
       ]);
 
       if (genRes.status === 'fulfilled') {
@@ -118,6 +152,10 @@ export default function HistoryPage() {
 
       if (ordersRes.status === 'fulfilled') {
         setCustomOrders(ordersRes.value.data || []);
+      }
+
+      if (shopRes.status === 'fulfilled') {
+        setShopOrders(shopRes.value.data || []);
       }
     } finally {
       setIsDataLoaded(true);
@@ -171,11 +209,11 @@ export default function HistoryPage() {
     <div className="min-h-[calc(100vh-64px)] p-4 sm:p-8 max-w-7xl mx-auto pt-24">
       <div className="flex flex-col mb-8 border-b-2 border-blue-100 pb-6 text-center sm:text-left">
         <h1 className="text-4xl sm:text-5xl font-black text-[#0c2a50] mb-2 drop-shadow-sm">My Account</h1>
-        <p className="text-[#1a4073] text-lg font-bold opacity-80">Your designs and custom orders</p>
+        <p className="text-[#1a4073] text-lg font-bold opacity-80">Your designs and orders</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-3 mb-8">
+      <div className="flex flex-wrap gap-3 mb-8">
         <button
           onClick={() => setActiveTab('designs')}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
@@ -205,6 +243,22 @@ export default function HistoryPage() {
           {customOrders.length > 0 && (
             <span className={`px-1.5 py-0.5 rounded-full text-xs ${activeTab === 'orders' ? 'bg-white/20' : 'bg-blue-100'}`}>
               {customOrders.length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('shop')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+            activeTab === 'shop'
+              ? 'bg-[#0c2a50] text-white shadow-md'
+              : 'bg-white border-2 border-blue-100 text-[#1a4073] hover:bg-blue-50'
+          }`}
+        >
+          <ShoppingCart size={16} />
+          Shop Orders
+          {shopOrders.length > 0 && (
+            <span className={`px-1.5 py-0.5 rounded-full text-xs ${activeTab === 'shop' ? 'bg-white/20' : 'bg-blue-100'}`}>
+              {shopOrders.length}
             </span>
           )}
         </button>
@@ -355,6 +409,71 @@ export default function HistoryPage() {
                         className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
                       >
                         View Details <ExternalLink size={12} />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Shop Orders Tab */}
+      {activeTab === 'shop' && (
+        <>
+          {shopOrders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 px-4 bg-white/50 backdrop-blur-sm rounded-[2rem] border-4 border-dashed border-blue-200 max-w-3xl mx-auto shadow-sm">
+              <div className="bg-blue-100 p-6 rounded-full mb-6">
+                <ShoppingCart size={48} className="text-blue-400 mx-auto" />
+              </div>
+              <h2 className="text-3xl font-black text-[#0c2a50] mb-4 text-center">No shop orders yet</h2>
+              <p className="text-[#1a4073] mb-8 text-center max-w-md">
+                Browse our shop to find ready-made 3D prints available for purchase.
+              </p>
+              <Link href="/shop">
+                <Button variant="primary" size="lg" className="shadow-[0_6px_0_#cc6200]">
+                  Browse Shop
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {shopOrders.map((order) => {
+                const itemsSummary = (order.items || [])
+                  .map((i) => `${i.quantity}x ${i.name}`)
+                  .join(', ');
+                return (
+                  <div key={order.id} className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col sm:flex-row gap-5 items-start sm:items-center">
+                    {/* Icon */}
+                    <div className="w-14 h-14 rounded-lg bg-blue-50 border border-blue-100 shrink-0 flex items-center justify-center">
+                      <ShoppingCart size={24} className="text-blue-400" />
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${SHOP_STATUS_STYLES[order.status] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                          {SHOP_STATUS_LABELS[order.status] || order.status}
+                        </span>
+                        <span className="text-xs text-slate-400 font-mono">#{order.id.slice(0, 8).toUpperCase()}</span>
+                      </div>
+                      <p className="font-semibold text-slate-800 text-sm truncate">{itemsSummary || 'Shop order'}</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Placed {new Date(order.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    </div>
+
+                    {/* Price + action */}
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      <span className="text-lg font-black text-orange-500">
+                        £{Number(order.total || 0).toFixed(2)}
+                      </span>
+                      <Link
+                        href={`/orders/shop/${order.id}`}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                      >
+                        Track Order <ExternalLink size={12} />
                       </Link>
                     </div>
                   </div>

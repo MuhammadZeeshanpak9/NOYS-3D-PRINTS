@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/useAuth';
-import { ArrowLeft, Package, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Package, MessageSquare, CheckCircle, XCircle } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 
 const STATUS_STYLES: Record<string, string> = {
@@ -35,6 +35,26 @@ const REVIEW_STYLES: Record<string, string> = {
   changes_requested: 'bg-orange-50 text-orange-700 border-orange-200',
   rejected: 'bg-red-50 text-red-700 border-red-200',
 };
+
+const CUSTOM_STEPS = [
+  { key: 'placed',     label: 'Order Placed', desc: 'We received your order' },
+  { key: 'in_review',  label: 'In Review',    desc: "We're reviewing your image" },
+  { key: 'printing',   label: 'Printing',     desc: 'Your model is being printed' },
+  { key: 'finishing',  label: 'Finishing',    desc: 'Painting and final touches' },
+  { key: 'shipped',    label: 'Shipped',      desc: 'Your order is on its way' },
+];
+
+function customStatusToStep(status: string): number {
+  switch (status) {
+    case 'shipped':
+    case 'completed': return 4;
+    case 'kit_packing':
+    case 'painting':  return 3;
+    case 'printing':  return 2;
+    case 'in_review': return 1;
+    default:          return 0; // new_order, awaiting_payment
+  }
+}
 
 function getApiBase() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
@@ -118,6 +138,72 @@ export default function OrderDetailPage() {
           Review: {order.review_status?.replace('_', ' ')}
         </span>
       </div>
+
+      {/* Progress stepper */}
+      {order.status === 'cancelled' ? (
+        <div className="flex items-center gap-4 bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-8">
+          <XCircle size={36} className="text-red-400 shrink-0" />
+          <div>
+            <p className="font-black text-red-700 text-lg">Order Cancelled</p>
+            <p className="text-sm text-red-500 mt-0.5">This order has been cancelled. Contact us if you have questions.</p>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 mb-8">
+          <div className="relative flex items-start justify-between">
+            {/* Connecting line */}
+            <div className="absolute top-5 left-0 right-0 h-0.5 mx-[8%]" aria-hidden="true">
+              <div className="h-full bg-slate-200 relative">
+                <div
+                  className="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-700"
+                  style={{ width: `${(customStatusToStep(order.status) / (CUSTOM_STEPS.length - 1)) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {CUSTOM_STEPS.map((step, idx) => {
+              const currentStep = customStatusToStep(order.status);
+              const isDone    = idx < currentStep;
+              const isCurrent = idx === currentStep;
+
+              return (
+                <div key={step.key} className="relative flex flex-col items-center flex-1 z-10">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                    isDone
+                      ? 'bg-blue-500 border-blue-500'
+                      : isCurrent
+                      ? 'bg-blue-500 border-blue-500 ring-4 ring-blue-100 ring-offset-1'
+                      : 'bg-white border-slate-300'
+                  }`}>
+                    {isDone ? (
+                      <CheckCircle size={18} className="text-white" strokeWidth={2.5} />
+                    ) : isCurrent ? (
+                      <div className="w-3 h-3 rounded-full bg-white animate-pulse" />
+                    ) : (
+                      <div className="w-3 h-3 rounded-full bg-slate-300" />
+                    )}
+                  </div>
+                  <div className="mt-3 text-center px-1">
+                    <p className={`text-xs font-bold leading-tight ${
+                      isDone || isCurrent ? 'text-blue-700' : 'text-slate-400'
+                    }`}>
+                      {step.label}
+                    </p>
+                    <p className={`text-[10px] mt-0.5 leading-tight hidden sm:block ${
+                      isCurrent ? 'text-blue-500' : 'text-slate-400'
+                    }`}>
+                      {isCurrent ? step.desc : ''}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-6 text-center text-sm text-blue-600 font-semibold sm:hidden">
+            {CUSTOM_STEPS[customStatusToStep(order.status)]?.desc}
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Reference image */}
