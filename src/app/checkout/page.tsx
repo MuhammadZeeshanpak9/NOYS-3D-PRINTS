@@ -110,7 +110,12 @@ export default function CheckoutPage() {
           city: shipping.city,
           zip_code: shipping.zip_code,
           country: shipping.country,
-        }
+        },
+        // Send the current origin so the post-payment redirect always returns
+        // to the same domain the buyer is on — independent of the backend's
+        // FRONTEND_URL env var.
+        success_url: `${window.location.origin}/orders/success`,
+        cancel_url: `${window.location.origin}/checkout?cancelled=true`,
       });
 
       const { checkout_url, order_id } = response.data;
