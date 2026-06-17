@@ -36,7 +36,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center p-4 pt-20">
       <div className="absolute top-1/3 right-20 w-16 h-16 bg-blue-400 rounded-lg transform rotate-12 opacity-50 blur-[2px]" />
       <div className="absolute bottom-1/4 left-10 w-24 h-24 bg-orange-200 rounded-xl transform -rotate-12 opacity-60 blur-[3px]" />
 

@@ -43,7 +43,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center p-4 pt-20">
       <div className="absolute top-1/4 left-10 w-24 h-24 bg-orange-300 rounded-lg transform rotate-45 opacity-40 blur-[2px]" />
       <div className="absolute bottom-1/4 right-10 w-32 h-32 bg-blue-300 rounded-full opacity-40 blur-[4px]" />
 
