@@ -31,7 +31,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] p-4 sm:p-8 max-w-3xl mx-auto flex flex-col items-center justify-center pt-24">
+    <div className="min-h-[calc(100vh-64px)] px-4 pb-4 sm:px-8 sm:pb-8 max-w-3xl mx-auto flex flex-col items-center justify-center pt-24">
       <Card className="w-full border-t-8 border-t-blue-500 shadow-2xl">
         <CardContent className="p-8 sm:p-12">
           <h1 className="text-3xl font-bold text-[#0c2a50] mb-2 text-center">Get in Touch</h1>

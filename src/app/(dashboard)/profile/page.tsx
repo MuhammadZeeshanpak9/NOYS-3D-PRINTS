@@ -137,7 +137,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] p-4 sm:p-8 max-w-5xl mx-auto pt-24">
+    <div className="min-h-[calc(100vh-64px)] px-4 pb-4 sm:px-8 sm:pb-8 max-w-5xl mx-auto pt-24">
       <h1 className="text-4xl font-black text-[#0c2a50] mb-8 drop-shadow-sm">My Profile</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

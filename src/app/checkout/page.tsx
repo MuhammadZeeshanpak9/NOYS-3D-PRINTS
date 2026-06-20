@@ -158,7 +158,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] p-4 sm:p-8 max-w-6xl mx-auto pt-24">
+    <div className="min-h-[calc(100vh-64px)] px-4 pb-4 sm:px-8 sm:pb-8 max-w-6xl mx-auto pt-24">
       <h1 className="text-4xl sm:text-5xl font-black text-[#0c2a50] mb-8 drop-shadow-sm">Checkout</h1>
       
       <form onSubmit={handlePlaceOrder} className="flex flex-col lg:flex-row gap-8">

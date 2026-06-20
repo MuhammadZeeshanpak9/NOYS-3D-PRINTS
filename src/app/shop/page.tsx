@@ -201,7 +201,7 @@ function ShopContent() {
 
 export default function ShopPage() {
   return (
-    <div className="min-h-[calc(100vh-64px)] p-8 max-w-7xl mx-auto pt-24">
+    <div className="min-h-[calc(100vh-64px)] px-8 pb-8 max-w-7xl mx-auto pt-24">
       <h1 className="text-4xl font-bold text-[#0c2a50] mb-8 text-center pt-8">Shop Ready-Made Prints</h1>
       <Suspense fallback={<div className="text-center py-20 text-gray-500 font-bold animate-pulse">Loading shop...</div>}>
         <ShopContent />

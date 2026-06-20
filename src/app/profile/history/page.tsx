@@ -206,7 +206,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] p-4 sm:p-8 max-w-7xl mx-auto pt-24">
+    <div className="min-h-[calc(100vh-64px)] px-4 pb-4 sm:px-8 sm:pb-8 max-w-7xl mx-auto pt-24">
       <div className="flex flex-col mb-8 border-b-2 border-blue-100 pb-6 text-center sm:text-left">
         <h1 className="text-4xl sm:text-5xl font-black text-[#0c2a50] mb-2 drop-shadow-sm">My Account</h1>
         <p className="text-[#1a4073] text-lg font-bold opacity-80">Your designs and orders</p>

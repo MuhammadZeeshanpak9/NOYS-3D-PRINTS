@@ -141,7 +141,7 @@ function PaymentGatewayContent() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] p-8 max-w-5xl mx-auto pt-24 relative">
+    <div className="min-h-[calc(100vh-64px)] px-8 pb-8 max-w-5xl mx-auto pt-24 relative">
       
       <button onClick={() => router.push('/pricing')} className="flex items-center gap-2 text-blue-500 font-bold hover:text-orange-500 transition-colors mb-6 absolute top-24 left-8">
           <ArrowLeft size={18} /> Back to Pricing
