@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Center, Html, useProgress, Environment } from '@react-three/drei';
+import { OrbitControls, useGLTF, Center, Html, useProgress } from '@react-three/drei';
 
 interface Props {
   src: string;
@@ -94,10 +94,10 @@ function FallbackOverlay({ poster }: { poster?: string }) {
         />
       ) : null}
       <p style={{ fontSize: 13, color: poster ? 'rgba(255,255,255,0.75)' : '#64748b', fontWeight: 600, margin: 0 }}>
-        3D model could not be loaded.
+        {poster ? 'Showing preview image' : '3D model could not be displayed'}
       </p>
       <p style={{ fontSize: 11, color: poster ? 'rgba(255,255,255,0.55)' : '#94a3b8', margin: 0 }}>
-        The link may have expired — try regenerating the model.
+        This device may not support the interactive 3D view — try a different browser or a desktop.
       </p>
     </div>
   );
@@ -109,14 +109,21 @@ export function ModelViewer3DInner({ src, poster }: Props) {
       <ModelErrorBoundary fallback={<FallbackOverlay poster={poster} />}>
         <Canvas
           camera={{ position: [0, 0.5, 3], fov: 45 }}
+          dpr={[1, 2]}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', touchAction: 'none' }}
           gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}
         >
-          <ambientLight intensity={0.25} />
-          <directionalLight position={[5, 5, 5]} intensity={0.8} />
-          <directionalLight position={[-5, 3, -3]} intensity={0.3} />
-
-          <Environment preset="studio" />
+          {/* Explicit lighting only — the studio HDR Environment map crashed
+              WebGL on many phones (mobile GPU memory / float-texture limits),
+              which is why the viewer failed on mobile but worked on desktop.
+              The model is a flat non-metallic grey, so lights alone render it
+              correctly without the costly environment map, and desktop looks
+              effectively the same. dpr is capped so high-DPR phone screens
+              don't blow the GPU framebuffer budget. */}
+          <ambientLight intensity={0.6} />
+          <hemisphereLight args={['#ffffff', '#404040', 0.8]} />
+          <directionalLight position={[5, 5, 5]} intensity={1.1} />
+          <directionalLight position={[-5, 3, -3]} intensity={0.45} />
 
           <Suspense fallback={<Loader />}>
             <Model url={src} />
