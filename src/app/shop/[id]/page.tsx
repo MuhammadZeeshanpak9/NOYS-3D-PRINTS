@@ -23,6 +23,11 @@ interface ColourOption {
   sort_order: number;
 }
 
+interface ScaleOption {
+  label: string;
+  price: number;
+}
+
 interface Product {
   id: string;
   name: string;
@@ -32,6 +37,7 @@ interface Product {
   is_active: boolean;
   media: MediaRow[];
   colours: ColourOption[];
+  scale_variations?: { enabled: boolean; scales: ScaleOption[] } | null;
 }
 
 export default function ProductDetailPage() {
@@ -44,6 +50,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [activeIdx, setActiveIdx] = useState(0);
   const [selectedColour, setSelectedColour] = useState<ColourOption | null>(null);
+  const [selectedScale, setSelectedScale] = useState<ScaleOption | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,6 +61,7 @@ export default function ProductDetailPage() {
           setProduct(res.data);
           setActiveIdx(0);
           setSelectedColour(null);
+          setSelectedScale(null);
         }
       } catch (err) {
         if (!cancelled) {
@@ -81,19 +89,22 @@ export default function ProductDetailPage() {
   const active = gallery[activeIdx];
 
   const hasColours = (product?.colours?.length ?? 0) > 0;
-  const canAddToCart = !hasColours || selectedColour !== null;
+  const hasScales = !!(product?.scale_variations?.enabled && (product.scale_variations.scales?.length ?? 0) > 0);
+  const canAddToCart = (!hasColours || selectedColour !== null) && (!hasScales || selectedScale !== null);
+  const displayPrice = selectedScale ? selectedScale.price : (product?.price ?? 0);
 
   const handleAddToCart = () => {
     if (!product || !canAddToCart) return;
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: displayPrice,
       quantity: 1,
       image: product.image_url || gallery.find(m => m.media_type === 'image')?.url || undefined,
       colour: selectedColour ? { name: selectedColour.name, hex_code: selectedColour.hex_code } : undefined,
+      scale: selectedScale ? { label: selectedScale.label, price: selectedScale.price } : undefined,
     });
-    success(`Added ${product.name}${selectedColour ? ` (${selectedColour.name})` : ''} to your cart!`);
+    success(`Added ${product.name}${selectedColour ? ` (${selectedColour.name})` : ''}${selectedScale ? ` — ${selectedScale.label}` : ''} to your cart!`);
   };
 
   if (loading) {
@@ -181,7 +192,7 @@ export default function ProductDetailPage() {
               {product.name}
             </h1>
             <p className="text-3xl font-black text-orange-500 mt-3">
-              £{Number(product.price).toFixed(2)}
+              £{Number(displayPrice).toFixed(2)}
             </p>
           </div>
 
@@ -222,6 +233,32 @@ export default function ProductDetailPage() {
                 <p className="mt-2 text-sm font-semibold text-blue-600">{selectedColour.name}</p>
               ) : (
                 <p className="mt-2 text-sm text-slate-400">Please select a colour</p>
+              )}
+            </div>
+          )}
+
+          {hasScales && (
+            <div className="bg-white border border-blue-100 rounded-2xl p-5 shadow-sm">
+              <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">
+                Scale
+              </h2>
+              <select
+                value={selectedScale?.label ?? ''}
+                onChange={e => {
+                  const found = product!.scale_variations!.scales.find(s => s.label === e.target.value);
+                  setSelectedScale(found ?? null);
+                }}
+                className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white text-slate-700 font-semibold"
+              >
+                <option value="">Select a scale...</option>
+                {product!.scale_variations!.scales.map(s => (
+                  <option key={s.label} value={s.label}>
+                    {s.label} — £{Number(s.price).toFixed(2)}
+                  </option>
+                ))}
+              </select>
+              {!selectedScale && (
+                <p className="mt-2 text-sm text-slate-400">Please select a scale</p>
               )}
             </div>
           )}

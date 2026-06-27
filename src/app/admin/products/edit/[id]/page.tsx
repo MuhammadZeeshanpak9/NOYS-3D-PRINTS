@@ -13,6 +13,11 @@ interface ColourEntry {
   hex_code: string;
 }
 
+interface ScaleEntry {
+  label: string;
+  price: number;
+}
+
 interface Category {
   id: string;
   name: string;
@@ -50,13 +55,29 @@ export default function EditProductPage() {
 
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [colours, setColours] = useState<ColourEntry[]>([]);
+  const [colourPresets, setColourPresets] = useState<ColourEntry[]>([]);
+  const [scaleEnabled, setScaleEnabled] = useState(false);
+  const [scales, setScales] = useState<ScaleEntry[]>([
+    { label: '1:12 Scale', price: 0 },
+    { label: '1:24 Scale', price: 0 },
+  ]);
 
   useEffect(() => {
     if (productId) {
       fetchProduct();
       fetchCategories();
     }
+    fetchColourPresets();
   }, [productId]);
+
+  const fetchColourPresets = async () => {
+    try {
+      const res = await apiClient.get('/colour-presets');
+      setColourPresets(res.data || []);
+    } catch {
+      // presets are optional — silently skip if unavailable
+    }
+  };
 
   const fetchProduct = async () => {
     try {
@@ -88,6 +109,13 @@ export default function EditProductPage() {
       // Hydrate colours from server.
       const serverColours = Array.isArray(prod.colours) ? prod.colours : [];
       setColours(serverColours.map((c: any) => ({ name: c.name, hex_code: c.hex_code })));
+
+      // Hydrate scale_variations from server.
+      const sv = prod.scale_variations;
+      if (sv?.enabled && Array.isArray(sv.scales) && sv.scales.length > 0) {
+        setScaleEnabled(true);
+        setScales(sv.scales.map((s: any) => ({ label: s.label, price: Number(s.price) })));
+      }
     } catch (err) {
       console.error('Failed to fetch product:', err);
       toastError('Failed to load product');
@@ -142,6 +170,9 @@ export default function EditProductPage() {
         image_url: primaryImage?.url ?? '',
         media: uploadedMedia,
         colours: colours.filter(c => c.name.trim() && c.hex_code),
+        scale_variations: scaleEnabled && scales.filter(s => s.label.trim() && s.price > 0).length > 0
+          ? { enabled: true, scales: scales.filter(s => s.label.trim() && s.price > 0) }
+          : null,
       });
 
       success('Product updated successfully!');
@@ -279,6 +310,24 @@ export default function EditProductPage() {
                 <Plus size={16} /> Add Colour
               </button>
             </div>
+            {colourPresets.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs text-slate-500 font-medium">Quick-add from saved presets:</p>
+                <div className="flex flex-wrap gap-2">
+                  {colourPresets.map(p => (
+                    <button
+                      key={p.hex_code + p.name}
+                      type="button"
+                      title={`Add ${p.name}`}
+                      onClick={() => { if (!colours.some(c => c.name === p.name)) setColours(prev => [...prev, { name: p.name, hex_code: p.hex_code }]); }}
+                      className="w-8 h-8 rounded-full border-2 border-slate-300 hover:border-blue-400 hover:scale-110 transition-all shadow-sm"
+                      style={{ backgroundColor: p.hex_code }}
+                      aria-label={`Add ${p.name}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
             {colours.length === 0 && (
               <p className="text-sm text-slate-400 italic">No colours added — customers can add to cart without selecting a colour.</p>
             )}
@@ -310,6 +359,66 @@ export default function EditProductPage() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* ── Scale Variations ────────────────────────────────── */}
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700">Scale Variations</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Offer this product at different scales with individual prices</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setScaleEnabled(v => !v)}
+                className={`relative w-10 h-5 rounded-full transition-colors ${scaleEnabled ? 'bg-blue-600' : 'bg-slate-300'}`}
+                aria-label="Toggle scale variations"
+              >
+                <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${scaleEnabled ? 'translate-x-5' : ''}`} />
+              </button>
+            </div>
+            {scaleEnabled && (
+              <div className="space-y-3">
+                {scales.map((s, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      placeholder="Scale label (e.g. 1:12 Scale)"
+                      value={s.label}
+                      onChange={e => setScales(prev => prev.map((x, i) => i === idx ? { ...x, label: e.target.value } : x))}
+                      className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    />
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm text-slate-500">£</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        value={s.price || ''}
+                        onChange={e => setScales(prev => prev.map((x, i) => i === idx ? { ...x, price: parseFloat(e.target.value) || 0 } : x))}
+                        className="w-24 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setScales(prev => prev.filter((_, i) => i !== idx))}
+                      className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                      aria-label="Remove scale"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setScales(prev => [...prev, { label: '', price: 0 }])}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                  <Plus size={16} /> Add Scale
+                </button>
+              </div>
+            )}
           </div>
 
         </div>

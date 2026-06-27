@@ -97,7 +97,9 @@ export default function CheckoutPage() {
         name: item.name,
         price: item.price,
         quantity: item.quantity,
-        image: item.image
+        image: item.image,
+        ...(item.colour ? { colour: item.colour } : {}),
+        ...(item.scale ? { scale_label: item.scale.label } : {}),
       }));
 
       const response = await apiClient.post('/orders/checkout', {

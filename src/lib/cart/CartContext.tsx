@@ -9,13 +9,14 @@ export interface CartItem {
   quantity: number;
   image?: string;
   colour?: { name: string; hex_code: string };
+  scale?: { label: string; price: number };
 }
 
 interface CartContextType {
   items: CartItem[];
   addToCart: (item: CartItem) => void;
-  removeFromCart: (id: string, colour?: { name: string; hex_code: string }) => void;
-  updateQuantity: (id: string, quantity: number, colour?: { name: string; hex_code: string }) => void;
+  removeFromCart: (id: string, colour?: { name: string; hex_code: string }, scale?: { label: string; price: number }) => void;
+  updateQuantity: (id: string, quantity: number, colour?: { name: string; hex_code: string }, scale?: { label: string; price: number }) => void;
   clearCart: () => void;
   itemCount: number;
   cartTotal: number;
@@ -57,7 +58,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addToCart = (newItem: CartItem) => {
     setItems((currentItems) => {
       const isSameEntry = (item: CartItem) =>
-        item.id === newItem.id && (item.colour?.name ?? '') === (newItem.colour?.name ?? '');
+        item.id === newItem.id &&
+        (item.colour?.name ?? '') === (newItem.colour?.name ?? '') &&
+        (item.scale?.label ?? '') === (newItem.scale?.label ?? '');
       const existingItem = currentItems.find(isSameEntry);
       if (existingItem) {
         return currentItems.map(item =>
@@ -70,19 +73,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const removeFromCart = (id: string, colour?: { name: string; hex_code: string }) => {
+  const removeFromCart = (id: string, colour?: { name: string; hex_code: string }, scale?: { label: string; price: number }) => {
     setItems((currentItems) => currentItems.filter(item => {
       if (item.id !== id) return true;
-      if (colour) return (item.colour?.name ?? '') !== colour.name;
+      if ((item.colour?.name ?? '') !== (colour?.name ?? '')) return true;
+      if ((item.scale?.label ?? '') !== (scale?.label ?? '')) return true;
       return false;
     }));
   };
 
-  const updateQuantity = (id: string, quantity: number, colour?: { name: string; hex_code: string }) => {
+  const updateQuantity = (id: string, quantity: number, colour?: { name: string; hex_code: string }, scale?: { label: string; price: number }) => {
     setItems((currentItems) =>
       currentItems.map(item => {
         if (item.id !== id) return item;
-        if (colour && (item.colour?.name ?? '') !== colour.name) return item;
+        if ((item.colour?.name ?? '') !== (colour?.name ?? '')) return item;
+        if ((item.scale?.label ?? '') !== (scale?.label ?? '')) return item;
         return { ...item, quantity: Math.max(1, quantity) };
       })
     );

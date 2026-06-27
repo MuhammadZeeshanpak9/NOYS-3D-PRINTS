@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/useAuth';
-import { LayoutDashboard, Users, FileText, Settings, LogOut, Package, Tags, Cuboid, Palette, Layers, Paintbrush, Truck, ClipboardList, ShoppingBag, HelpCircle, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Settings, LogOut, Package, Tags, Cuboid, Palette, Layers, Paintbrush, Truck, ClipboardList, ShoppingBag, HelpCircle, Menu, X, Pipette } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -95,6 +95,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/paint-colors" className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors">
             <Palette size={20} />
             <span className="font-medium">Paint Colours</span>
+          </Link>
+          <Link href="/admin/colour-presets" className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors">
+            <Pipette size={20} />
+            <span className="font-medium">Colour Presets</span>
           </Link>
           <Link href="/admin/delivery" className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors">
             <Truck size={20} />

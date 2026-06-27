@@ -34,7 +34,7 @@ export default function CartPage() {
         {}
         <div className="flex-1 space-y-4">
           {items.map((item) => (
-            <Card key={`${item.id}-${item.colour?.name ?? ''}`} className="overflow-visible shadow-[4px_4px_0px_#1a4073] hover:-translate-y-1 transition-transform">
+            <Card key={`${item.id}-${item.colour?.name ?? ''}-${item.scale?.label ?? ''}`} className="overflow-visible shadow-[4px_4px_0px_#1a4073] hover:-translate-y-1 transition-transform">
               <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row gap-6 items-center">
 
                 {}
@@ -57,6 +57,11 @@ export default function CartPage() {
                       <span className="text-sm font-bold text-[#1a4073]">{item.colour.name}</span>
                     </div>
                   )}
+                  {item.scale && (
+                    <div className="flex items-center gap-2 justify-center sm:justify-start mb-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 w-fit mx-auto sm:mx-0">
+                      <span className="text-sm font-bold text-[#1a4073]">{item.scale.label}</span>
+                    </div>
+                  )}
                   <p className="text-lg font-black text-orange-500">£{item.price.toFixed(2)}</p>
                 </div>
 
@@ -64,14 +69,14 @@ export default function CartPage() {
                 <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-xl border-2 border-gray-200">
                   <button
                     className="p-1 rounded-md text-[#0c2a50] hover:bg-white transition-colors"
-                    onClick={() => updateQuantity(item.id, item.quantity - 1, item.colour)}
+                    onClick={() => updateQuantity(item.id, item.quantity - 1, item.colour, item.scale)}
                   >
                     <Minus size={18} />
                   </button>
                   <span className="font-bold w-6 text-center text-[#0c2a50]">{item.quantity}</span>
                   <button
                     className="p-1 rounded-md text-[#0c2a50] hover:bg-white transition-colors"
-                    onClick={() => updateQuantity(item.id, item.quantity + 1, item.colour)}
+                    onClick={() => updateQuantity(item.id, item.quantity + 1, item.colour, item.scale)}
                   >
                     <Plus size={18} />
                   </button>
@@ -79,7 +84,7 @@ export default function CartPage() {
 
                 {}
                 <button
-                  onClick={() => removeFromCart(item.id, item.colour)}
+                  onClick={() => removeFromCart(item.id, item.colour, item.scale)}
                   className="p-3 text-red-400 hover:text-white hover:bg-red-500 rounded-full transition-all border-2 border-transparent hover:border-[#1a4073] hover:shadow-[2px_2px_0px_#1a4073]"
                   title="Remove Item"
                 >
