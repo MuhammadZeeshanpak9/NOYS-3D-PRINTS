@@ -40,10 +40,26 @@ function ShopContent() {
     fetchData();
   }, [activeCategorySlug]);
 
+  // Returns the price to advertise on a listing. When a product has scale
+  // variations, the lowest scale price is shown with a "From" prefix so the
+  // displayed price reads as a starting price, not a fixed one.
+  const listingPrice = (product: any): { from: boolean; price: number } => {
+    const sv = product?.scale_variations;
+    if (sv?.enabled && Array.isArray(sv.scales) && sv.scales.length > 0) {
+      return { from: true, price: Math.min(...sv.scales.map((s: any) => Number(s.price))) };
+    }
+    return { from: false, price: Number(product.price) };
+  };
+
+  const hasScales = (product: any) =>
+    !!(product?.scale_variations?.enabled && (product.scale_variations.scales?.length ?? 0) > 0);
+
   const handleAddToCart = (e: React.MouseEvent, product: any) => {
     e.preventDefault();
     e.stopPropagation();
-    if (Array.isArray(product.colours) && product.colours.length > 0) {
+    // Colour or scale choices must be made on the detail page so the right
+    // variant and price are captured.
+    if ((Array.isArray(product.colours) && product.colours.length > 0) || hasScales(product)) {
       router.push(`/shop/${product.id}`);
       return;
     }
@@ -167,7 +183,15 @@ function ShopContent() {
                     </div>
                     <CardContent className="p-5 flex-1 flex flex-col">
                       <h3 className="font-bold text-gray-800 mb-2 leading-tight">{product.name}</h3>
-                      <p className="text-xl font-black text-orange-500 mb-4">£{Number(product.price).toFixed(2)}</p>
+                      {(() => {
+                        const lp = listingPrice(product);
+                        return (
+                          <p className="text-xl font-black text-orange-500 mb-4">
+                            {lp.from && <span className="text-sm font-bold text-orange-400 mr-1">From</span>}
+                            £{lp.price.toFixed(2)}
+                          </p>
+                        );
+                      })()}
 
                       <div className="mt-auto">
                         <Button

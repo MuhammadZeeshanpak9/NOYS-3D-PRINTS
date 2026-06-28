@@ -91,7 +91,13 @@ export default function ProductDetailPage() {
   const hasColours = (product?.colours?.length ?? 0) > 0;
   const hasScales = !!(product?.scale_variations?.enabled && (product.scale_variations.scales?.length ?? 0) > 0);
   const canAddToCart = (!hasColours || selectedColour !== null) && (!hasScales || selectedScale !== null);
-  const displayPrice = selectedScale ? selectedScale.price : (product?.price ?? 0);
+  // Before a scale is chosen, advertise the lowest scale price as the starting
+  // ("From") price; once chosen, show that scale's exact price.
+  const lowestScalePrice = hasScales
+    ? Math.min(...product!.scale_variations!.scales.map(s => Number(s.price)))
+    : (product?.price ?? 0);
+  const displayPrice = selectedScale ? selectedScale.price : (hasScales ? lowestScalePrice : (product?.price ?? 0));
+  const showFromPrefix = hasScales && !selectedScale;
 
   const handleAddToCart = () => {
     if (!product || !canAddToCart) return;
@@ -192,6 +198,7 @@ export default function ProductDetailPage() {
               {product.name}
             </h1>
             <p className="text-3xl font-black text-orange-500 mt-3">
+              {showFromPrefix && <span className="text-xl font-bold text-orange-400 mr-1.5">From</span>}
               £{Number(displayPrice).toFixed(2)}
             </p>
           </div>
