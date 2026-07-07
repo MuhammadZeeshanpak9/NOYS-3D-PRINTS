@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Center, Html, useProgress, Environment, Lightformer } from '@react-three/drei';
+import { OrbitControls, useGLTF, Center, Html, useProgress } from '@react-three/drei';
 
 interface Props {
   src: string;
@@ -31,11 +31,58 @@ function Loader() {
   );
 }
 
-const GREY_MATERIAL = new THREE.MeshStandardMaterial({
-  color: new THREE.Color('#808080'),
-  roughness: 0.5, // low enough that the studio env reflections read on the surface
-  metalness: 0.0,
-});
+// Matcap ("material capture") shading: the studio-sphere lighting is baked
+// into a small texture and sampled by view-space normal — the same technique
+// ZBrush/Sketchfab use for grey-clay sculpt previews. It needs no lights or
+// environment map (the crash risk on mobile GPUs that forced the flat-light
+// rig), costs almost nothing, and renders identically on every device. The
+// texture is drawn once on a 2D canvas at runtime, so there is no asset to
+// download either.
+function createClayMatcap(): THREE.Texture {
+  const size = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+
+  // Base sphere shading, key light from the upper-left.
+  const base = ctx.createRadialGradient(96, 88, 10, 128, 128, 128);
+  base.addColorStop(0, '#f0f0f0');
+  base.addColorStop(0.45, '#c6c6c6');
+  base.addColorStop(0.8, '#878787');
+  base.addColorStop(1, '#4a4a4a');
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, size, size);
+
+  // Soft specular highlight inside the key light.
+  const spec = ctx.createRadialGradient(88, 78, 2, 88, 78, 46);
+  spec.addColorStop(0, 'rgba(255,255,255,0.8)');
+  spec.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = spec;
+  ctx.fillRect(0, 0, size, size);
+
+  // Faint bounce light on the opposite rim so shadow sides don't go dead.
+  const rim = ctx.createRadialGradient(176, 176, 60, 176, 176, 122);
+  rim.addColorStop(0, 'rgba(255,255,255,0)');
+  rim.addColorStop(0.82, 'rgba(255,255,255,0)');
+  rim.addColorStop(1, 'rgba(255,255,255,0.16)');
+  ctx.fillStyle = rim;
+  ctx.fillRect(0, 0, size, size);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+let clayMaterial: THREE.MeshMatcapMaterial | null = null;
+function getClayMaterial(): THREE.MeshMatcapMaterial {
+  if (!clayMaterial) {
+    clayMaterial = new THREE.MeshMatcapMaterial({ matcap: createClayMatcap() });
+    // Skip ACES tone mapping so the matcap's designed contrast isn't compressed.
+    clayMaterial.toneMapped = false;
+  }
+  return clayMaterial;
+}
 
 function Model({ url }: { url: string }) {
   const { scene } = useGLTF(url);
@@ -43,7 +90,7 @@ function Model({ url }: { url: string }) {
   useEffect(() => {
     scene.traverse((child: any) => {
       if (child.isMesh) {
-        child.material = GREY_MATERIAL;
+        child.material = getClayMaterial();
         child.castShadow = false;
         child.receiveShadow = false;
       }
@@ -57,8 +104,8 @@ function Model({ url }: { url: string }) {
   );
 }
 
-// Catches errors from useGLTF / Environment so a broken or expired
-// model URL doesn't take down the whole page.
+// Catches errors from useGLTF so a broken or expired model URL
+// doesn't take down the whole page.
 class ModelErrorBoundary extends React.Component<
   { fallback: React.ReactNode; children: React.ReactNode },
   { hasError: boolean }
@@ -113,25 +160,10 @@ export function ModelViewer3DInner({ src, poster }: Props) {
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', touchAction: 'none' }}
           gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}
         >
-          {/* Procedural studio environment. The old preset="studio" HDR file
-              crashed mobile WebGL (multi-MB float-texture download), so the
-              env map is instead generated in-GPU from a few soft Lightformer
-              panels at a capped 256px resolution — no network fetch, tiny
-              memory footprint, but restores the studio-style gradient shading
-              the flat ambient/directional rig lost. dpr stays capped for
+          {/* No scene lights: the matcap material bakes its own studio
+              lighting, so lights/environment maps (the thing that used to
+              crash mobile GPUs) are unnecessary. dpr stays capped for
               high-DPR phones. */}
-          <ambientLight intensity={0.3} />
-          <directionalLight position={[5, 5, 5]} intensity={0.8} />
-          <Environment resolution={256} frames={1}>
-            {/* overhead key */}
-            <Lightformer form="rect" intensity={3} position={[0, 5, 0]} rotation-x={Math.PI / 2} scale={[10, 10, 1]} />
-            {/* left / right rims */}
-            <Lightformer form="rect" intensity={2} position={[-5, 1, -1]} rotation-y={Math.PI / 2} scale={[10, 2, 1]} />
-            <Lightformer form="rect" intensity={2} position={[5, 1, -1]} rotation-y={-Math.PI / 2} scale={[10, 2, 1]} />
-            {/* soft front fill */}
-            <Lightformer form="rect" intensity={1} position={[0, 1, 5]} scale={[10, 5, 1]} />
-          </Environment>
-
           <Suspense fallback={<Loader />}>
             <Model url={src} />
           </Suspense>
