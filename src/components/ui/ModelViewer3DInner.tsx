@@ -22,7 +22,7 @@ function Loader() {
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }} />
-        <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+        <span style={{ fontSize: 11, color: '#a8b3c4', fontWeight: 600 }}>
           {Math.round(progress)}%
         </span>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
@@ -45,18 +45,21 @@ function createClayMatcap(): THREE.Texture {
   canvas.height = size;
   const ctx = canvas.getContext('2d')!;
 
-  // Base sphere shading, key light from the upper-left.
+  // Base sphere shading, key light from the upper-left. Mid-grey core with a
+  // deep falloff — a near-white core bleached fine surface detail, so the
+  // range is kept darker with more contrast, like sculpt-studio clay.
   const base = ctx.createRadialGradient(96, 88, 10, 128, 128, 128);
-  base.addColorStop(0, '#f0f0f0');
-  base.addColorStop(0.45, '#c6c6c6');
-  base.addColorStop(0.8, '#878787');
-  base.addColorStop(1, '#4a4a4a');
+  base.addColorStop(0, '#e2e2e2');
+  base.addColorStop(0.4, '#a8a8a8');
+  base.addColorStop(0.75, '#6e6e6e');
+  base.addColorStop(1, '#2e2e2e');
   ctx.fillStyle = base;
   ctx.fillRect(0, 0, size, size);
 
-  // Soft specular highlight inside the key light.
-  const spec = ctx.createRadialGradient(88, 78, 2, 88, 78, 46);
-  spec.addColorStop(0, 'rgba(255,255,255,0.8)');
+  // Soft specular highlight inside the key light — kept subtle so raised
+  // detail brightens without blowing out to flat white.
+  const spec = ctx.createRadialGradient(88, 78, 2, 88, 78, 38);
+  spec.addColorStop(0, 'rgba(255,255,255,0.45)');
   spec.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = spec;
   ctx.fillRect(0, 0, size, size);
@@ -152,7 +155,10 @@ function FallbackOverlay({ poster }: { poster?: string }) {
 
 export function ModelViewer3DInner({ src, poster }: Props) {
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: 380, background: '#c8c8c8', borderRadius: '0.75rem', overflow: 'hidden', position: 'relative' }}>
+    // Dark studio backdrop — grey clay pops against it the way Tripo's and
+    // Meshy's own viewers present sculpts; the old light-grey background
+    // washed the model out.
+    <div style={{ width: '100%', height: '100%', minHeight: 380, background: 'radial-gradient(ellipse at 50% 40%, #3a3d42 0%, #232529 70%, #1b1d20 100%)', borderRadius: '0.75rem', overflow: 'hidden', position: 'relative' }}>
       <ModelErrorBoundary fallback={<FallbackOverlay poster={poster} />}>
         <Canvas
           camera={{ position: [0, 0.5, 3], fov: 45 }}
