@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Center, Html, useProgress } from '@react-three/drei';
+import { OrbitControls, useGLTF, Center, Html, useProgress, Environment, Lightformer } from '@react-three/drei';
 
 interface Props {
   src: string;
@@ -33,7 +33,7 @@ function Loader() {
 
 const GREY_MATERIAL = new THREE.MeshStandardMaterial({
   color: new THREE.Color('#808080'),
-  roughness: 0.65,
+  roughness: 0.5, // low enough that the studio env reflections read on the surface
   metalness: 0.0,
 });
 
@@ -113,17 +113,24 @@ export function ModelViewer3DInner({ src, poster }: Props) {
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', touchAction: 'none' }}
           gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0 }}
         >
-          {/* Explicit lighting only — the studio HDR Environment map crashed
-              WebGL on many phones (mobile GPU memory / float-texture limits),
-              which is why the viewer failed on mobile but worked on desktop.
-              The model is a flat non-metallic grey, so lights alone render it
-              correctly without the costly environment map, and desktop looks
-              effectively the same. dpr is capped so high-DPR phone screens
-              don't blow the GPU framebuffer budget. */}
-          <ambientLight intensity={0.6} />
-          <hemisphereLight args={['#ffffff', '#404040', 0.8]} />
-          <directionalLight position={[5, 5, 5]} intensity={1.1} />
-          <directionalLight position={[-5, 3, -3]} intensity={0.45} />
+          {/* Procedural studio environment. The old preset="studio" HDR file
+              crashed mobile WebGL (multi-MB float-texture download), so the
+              env map is instead generated in-GPU from a few soft Lightformer
+              panels at a capped 256px resolution — no network fetch, tiny
+              memory footprint, but restores the studio-style gradient shading
+              the flat ambient/directional rig lost. dpr stays capped for
+              high-DPR phones. */}
+          <ambientLight intensity={0.3} />
+          <directionalLight position={[5, 5, 5]} intensity={0.8} />
+          <Environment resolution={256} frames={1}>
+            {/* overhead key */}
+            <Lightformer form="rect" intensity={3} position={[0, 5, 0]} rotation-x={Math.PI / 2} scale={[10, 10, 1]} />
+            {/* left / right rims */}
+            <Lightformer form="rect" intensity={2} position={[-5, 1, -1]} rotation-y={Math.PI / 2} scale={[10, 2, 1]} />
+            <Lightformer form="rect" intensity={2} position={[5, 1, -1]} rotation-y={-Math.PI / 2} scale={[10, 2, 1]} />
+            {/* soft front fill */}
+            <Lightformer form="rect" intensity={1} position={[0, 1, 5]} scale={[10, 5, 1]} />
+          </Environment>
 
           <Suspense fallback={<Loader />}>
             <Model url={src} />
