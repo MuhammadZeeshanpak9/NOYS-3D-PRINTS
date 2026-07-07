@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import apiClient from '@/lib/api/client';
 import { useToast } from '@/lib/toast/ToastContext';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, Plus, Trash2, Check, X } from 'lucide-react';
 
 interface ModelSize {
   id: string;
@@ -15,14 +15,23 @@ interface ModelSize {
   sort_order: number;
 }
 
+const blankDraft = { size_mm: '', price: '' };
+
 export default function AdminModelSizesPage() {
   const [sizes, setSizes] = useState<ModelSize[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [addDraft, setAddDraft] = useState(blankDraft);
+  const [addSaving, setAddSaving] = useState(false);
   const { success, error } = useToast();
 
   useEffect(() => {
-    apiClient.get('/model-sizes')
+    // active_only=false — admins need to see inactive sizes too, otherwise
+    // switching a size off with the Active toggle below hides it forever
+    // with no way to switch it back on.
+    apiClient.get('/model-sizes?active_only=false')
       .then(r => setSizes(r.data as ModelSize[]))
       .catch(() => error('Failed to load sizes'))
       .finally(() => setLoading(false));
@@ -49,14 +58,92 @@ export default function AdminModelSizesPage() {
     }
   };
 
+  const saveAdd = async () => {
+    if (!addDraft.size_mm || !addDraft.price) {
+      error('Size and price are required');
+      return;
+    }
+    setAddSaving(true);
+    try {
+      const res = await apiClient.post('/model-sizes', {
+        size_mm: Number(addDraft.size_mm),
+        price: Number(addDraft.price),
+        sort_order: sizes.length,
+      });
+      setSizes(prev => [...prev, res.data as ModelSize]);
+      setAdding(false);
+      setAddDraft(blankDraft);
+      success(`${addDraft.size_mm}mm size added`);
+    } catch {
+      error('Failed to add size');
+    } finally {
+      setAddSaving(false);
+    }
+  };
+
+  const deleteSize = async (size: ModelSize) => {
+    setDeletingId(size.id);
+    try {
+      await apiClient.delete(`/model-sizes/${size.id}`);
+      setSizes(prev => prev.filter(s => s.id !== size.id));
+      success(`${size.size_mm}mm removed`);
+    } catch {
+      error('Failed to delete — it may be in use by an existing order or pricing tier');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (loading) return <Spinner />;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900">Model Sizes</h1>
-        <p className="text-slate-500 mt-1">Edit individual pricing for each size. Changes apply immediately on save.</p>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Model Sizes</h1>
+          <p className="text-slate-500 mt-1">Add new sizes or edit pricing for existing ones. Changes apply immediately on save.</p>
+        </div>
+        <button
+          onClick={() => setAdding(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors shrink-0"
+        >
+          <Plus size={16} /> Add Size
+        </button>
       </div>
+
+      {adding && (
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 space-y-4">
+          <h3 className="font-semibold text-blue-800">New Model Size</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
+            <Field label="Size (mm)">
+              <input
+                type="number" min="1" step="1"
+                value={addDraft.size_mm}
+                onChange={e => setAddDraft(d => ({ ...d, size_mm: e.target.value }))}
+                className={inputCls}
+                placeholder="e.g. 200"
+              />
+            </Field>
+            <Field label="Price (£)">
+              <input
+                type="number" min="0" step="0.01"
+                value={addDraft.price}
+                onChange={e => setAddDraft(d => ({ ...d, price: e.target.value }))}
+                className={inputCls}
+                placeholder="0.00"
+              />
+            </Field>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button onClick={() => { setAdding(false); setAddDraft(blankDraft); }} className={btnGhost}>
+              <X size={14} /> Cancel
+            </button>
+            <button onClick={saveAdd} disabled={addSaving} className={btnPrimary}>
+              {addSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Add Size
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -68,7 +155,7 @@ export default function AdminModelSizesPage() {
                 <th className="px-5 py-3 text-slate-500 text-sm font-medium">Sale Price (£)</th>
                 <th className="px-5 py-3 text-slate-500 text-sm font-medium">On Sale</th>
                 <th className="px-5 py-3 text-slate-500 text-sm font-medium">Active</th>
-                <th className="px-5 py-3 text-slate-500 text-sm font-medium text-right">Save</th>
+                <th className="px-5 py-3 text-slate-500 text-sm font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -98,11 +185,28 @@ export default function AdminModelSizesPage() {
                   <td className="px-5 py-3">
                     <Toggle checked={size.is_active} onChange={v => update(size.id, 'is_active', v)} />
                   </td>
-                  <td className="px-5 py-3 text-right">
-                    <SaveBtn loading={saving === size.id} onClick={() => save(size)} />
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-2 justify-end">
+                      <SaveBtn loading={saving === size.id} onClick={() => save(size)} />
+                      <button
+                        onClick={() => deleteSize(size)}
+                        disabled={deletingId === size.id}
+                        className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors disabled:opacity-40"
+                        aria-label="Delete size"
+                      >
+                        {deletingId === size.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
+              {sizes.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-5 py-10 text-center text-slate-400">
+                    No sizes yet — click "Add Size" to create your first one.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -112,6 +216,12 @@ export default function AdminModelSizesPage() {
 }
 
 const inputCls = 'w-24 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300';
+const btnPrimary = 'flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-sm font-semibold rounded-lg transition-colors';
+const btnGhost = 'flex items-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-semibold rounded-lg transition-colors';
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className="space-y-1"><label className="text-xs font-semibold text-slate-500 uppercase">{label}</label>{children}</div>;
+}
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
