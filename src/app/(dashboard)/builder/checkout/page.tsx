@@ -20,7 +20,7 @@ interface PaintExtraItem {
 }
 
 interface PricingResult {
-  size: { id: string; size_mm: number; price: number; is_on_sale: boolean };
+  size: { id: string; size_label: string; price: number; is_on_sale: boolean };
   finish: { id: string; name: string; slug: string; price: number; is_on_sale: boolean };
   painting: { tier_id: string; tier_name: string; price: number } | null;
   extras: Array<{
@@ -44,7 +44,7 @@ interface PendingOrder {
   modelSizeId: string;
   finishOptionId: string;
   finishSlug: string;
-  sizeMm: number;
+  sizeLabel: string;
   finishName: string;
   paintExtras: PaintExtraItem[];
   pricing: PricingResult;
@@ -379,7 +379,7 @@ export default function BuilderCheckoutPage() {
                   </div>
                   <div className="divide-y divide-gray-100">
                     <Row label="Source" value={order.imageSource === 'ai' ? 'AI Generation' : 'Uploaded image'} />
-                    <Row label="Size" value={`${order.sizeMm}mm`} />
+                    <Row label="Size" value={order.sizeLabel} />
                     <Row label="Finish" value={order.finishName} />
                     {pricing.painting && <Row label="Painting" value={pricing.painting.tier_name} />}
                     {order.paintExtras.length > 0 && (
@@ -397,7 +397,7 @@ export default function BuilderCheckoutPage() {
                     <p className="font-black text-white text-sm">Price Breakdown</p>
                   </div>
                   <div className="p-4 space-y-2">
-                    <PriceRow label={`Size (${pricing.size.size_mm}mm)`} amount={pricing.size.price} sale={pricing.size.is_on_sale} />
+                    <PriceRow label={`Size (${pricing.size.size_label})`} amount={pricing.size.price} sale={pricing.size.is_on_sale} />
                     <PriceRow label={pricing.finish.name} amount={pricing.finish.price} sale={pricing.finish.is_on_sale} />
                     {pricing.painting && (
                       <PriceRow label={`Painting — ${pricing.painting.tier_name}`} amount={pricing.painting.price} />

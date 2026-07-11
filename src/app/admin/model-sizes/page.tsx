@@ -7,7 +7,7 @@ import { Loader2, Save, Plus, Trash2, Check, X } from 'lucide-react';
 
 interface ModelSize {
   id: string;
-  size_mm: number;
+  size_label: string;
   price: number;
   sale_price: number | null;
   is_on_sale: boolean;
@@ -15,7 +15,7 @@ interface ModelSize {
   sort_order: number;
 }
 
-const blankDraft = { size_mm: '', price: '' };
+const blankDraft = { size_label: '', price: '' };
 
 export default function AdminModelSizesPage() {
   const [sizes, setSizes] = useState<ModelSize[]>([]);
@@ -42,15 +42,20 @@ export default function AdminModelSizesPage() {
   };
 
   const save = async (size: ModelSize) => {
+    if (!size.size_label.trim()) {
+      error('Size label cannot be empty');
+      return;
+    }
     setSaving(size.id);
     try {
       await apiClient.put(`/model-sizes/${size.id}`, {
+        size_label: size.size_label.trim(),
         price: Number(size.price),
         sale_price: size.sale_price != null ? Number(size.sale_price) : null,
         is_on_sale: size.is_on_sale,
         is_active: size.is_active,
       });
-      success(`${size.size_mm}mm saved`);
+      success(`${size.size_label} saved`);
     } catch {
       error('Failed to save');
     } finally {
@@ -59,21 +64,21 @@ export default function AdminModelSizesPage() {
   };
 
   const saveAdd = async () => {
-    if (!addDraft.size_mm || !addDraft.price) {
+    if (!addDraft.size_label.trim() || !addDraft.price) {
       error('Size and price are required');
       return;
     }
     setAddSaving(true);
     try {
       const res = await apiClient.post('/model-sizes', {
-        size_mm: Number(addDraft.size_mm),
+        size_label: addDraft.size_label.trim(),
         price: Number(addDraft.price),
         sort_order: sizes.length,
       });
       setSizes(prev => [...prev, res.data as ModelSize]);
       setAdding(false);
       setAddDraft(blankDraft);
-      success(`${addDraft.size_mm}mm size added`);
+      success(`${addDraft.size_label} added`);
     } catch {
       error('Failed to add size');
     } finally {
@@ -86,7 +91,7 @@ export default function AdminModelSizesPage() {
     try {
       await apiClient.delete(`/model-sizes/${size.id}`);
       setSizes(prev => prev.filter(s => s.id !== size.id));
-      success(`${size.size_mm}mm removed`);
+      success(`${size.size_label} removed`);
     } catch {
       error('Failed to delete — it may be in use by an existing order or pricing tier');
     } finally {
@@ -115,13 +120,13 @@ export default function AdminModelSizesPage() {
         <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 space-y-4">
           <h3 className="font-semibold text-blue-800">New Model Size</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
-            <Field label="Size (mm)">
+            <Field label="Scale / Size">
               <input
-                type="number" min="1" step="1"
-                value={addDraft.size_mm}
-                onChange={e => setAddDraft(d => ({ ...d, size_mm: e.target.value }))}
-                className={inputCls}
-                placeholder="e.g. 200"
+                type="text"
+                value={addDraft.size_label}
+                onChange={e => setAddDraft(d => ({ ...d, size_label: e.target.value }))}
+                className={labelInputCls}
+                placeholder="e.g. 1:12 Scale"
               />
             </Field>
             <Field label="Price (£)">
@@ -161,7 +166,14 @@ export default function AdminModelSizesPage() {
             <tbody className="divide-y divide-slate-100">
               {sizes.map(size => (
                 <tr key={size.id} className={`hover:bg-slate-50 ${!size.is_active ? 'opacity-50' : ''}`}>
-                  <td className="px-5 py-3 font-bold text-slate-800">{size.size_mm}mm</td>
+                  <td className="px-5 py-3">
+                    <input
+                      type="text"
+                      value={size.size_label}
+                      onChange={e => update(size.id, 'size_label', e.target.value)}
+                      className={`${labelInputCls} font-bold`}
+                    />
+                  </td>
                   <td className="px-5 py-3">
                     <input
                       type="number" step="0.01" min="0"
@@ -216,6 +228,7 @@ export default function AdminModelSizesPage() {
 }
 
 const inputCls = 'w-24 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300';
+const labelInputCls = 'w-40 px-2 py-1.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-300';
 const btnPrimary = 'flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-sm font-semibold rounded-lg transition-colors';
 const btnGhost = 'flex items-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-semibold rounded-lg transition-colors';
 

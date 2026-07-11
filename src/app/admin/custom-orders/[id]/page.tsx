@@ -29,7 +29,7 @@ interface CustomOrder {
   users?: { name: string; email: string };
   reference_image_url: string | null;
   image_source: string;
-  size_mm: number;
+  size_label: string;
   finish_name: string;
   painting_tier_name: string | null;
   size_price: number;
@@ -235,7 +235,7 @@ export default function AdminCustomOrderDetailPage() {
               <h2 className="font-semibold text-slate-700">Configuration</h2>
             </div>
             <div className="divide-y divide-slate-100">
-              <Row label="Size" value={`${order.size_mm}mm`} />
+              <Row label="Size" value={order.size_label} />
               <Row label="Finish" value={order.finish_name} />
               {order.painting_tier_name && <Row label="Painting Tier" value={order.painting_tier_name} />}
               {order.paint_extras?.length > 0 && (
@@ -261,7 +261,7 @@ export default function AdminCustomOrderDetailPage() {
               <h2 className="font-semibold text-slate-700">Pricing Breakdown</h2>
             </div>
             <div className="p-5 space-y-2 text-sm">
-              <PRow label={`Size (${order.size_mm}mm)`} value={fmt(order.size_price)} />
+              <PRow label={`Size (${order.size_label})`} value={fmt(order.size_price)} />
               <PRow label={order.finish_name} value={fmt(order.finish_price)} />
               {order.painting_price > 0 && <PRow label={`Painting — ${order.painting_tier_name}`} value={fmt(order.painting_price)} />}
               {order.extras_total > 0 && <PRow label="Paint extras" value={fmt(order.extras_total)} />}

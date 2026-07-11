@@ -11,7 +11,7 @@ interface CustomOrder {
   order_number: number;
   user_id: string;
   users?: { name: string; email: string };
-  size_mm: number;
+  size_label: string;
   finish_name: string;
   total: number;
   status: string;
@@ -118,7 +118,7 @@ export default function AdminCustomOrdersPage() {
                       <p className="text-xs text-slate-400">{order.users?.email ?? ''}</p>
                     </td>
                     <td className="px-5 py-4 text-sm text-slate-600">
-                      {order.size_mm}mm · {order.finish_name}
+                      {order.size_label} · {order.finish_name}
                     </td>
                     <td className="px-5 py-4 font-semibold text-slate-800">{fmt(order.total)}</td>
                     <td className="px-5 py-4">

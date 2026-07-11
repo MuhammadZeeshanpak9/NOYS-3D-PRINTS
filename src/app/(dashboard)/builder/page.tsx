@@ -16,7 +16,7 @@ import {
 
 interface ModelSize {
   id: string;
-  size_mm: number;
+  size_label: string;
   price: number;
   is_on_sale: boolean;
   sale_price: number | null;
@@ -58,7 +58,7 @@ interface Generation {
 }
 
 interface PricingResult {
-  size: { id: string; size_mm: number; price: number; is_on_sale: boolean };
+  size: { id: string; size_label: string; price: number; is_on_sale: boolean };
   finish: { id: string; name: string; slug: string; price: number; is_on_sale: boolean };
   painting: { tier_id: string; tier_name: string; price: number } | null;
   extras: Array<{
@@ -308,7 +308,7 @@ export default function BuilderPage() {
         unitPrice: effectivePrice(pe.color.price, pe.color.is_on_sale, pe.color.sale_price),
       })),
       pricing,
-      sizeMm: selectedSize.size_mm,
+      sizeLabel: selectedSize.size_label,
       finishName: selectedFinish.name,
     };
     sessionStorage.setItem('noys_pending_order', JSON.stringify(order));
@@ -526,7 +526,7 @@ export default function BuilderPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-black text-[#0c2a50] mb-1">Select Your Size</h2>
-                  <p className="text-gray-500">Choose the height of your printed model.</p>
+                  <p className="text-gray-500">Choose the scale of your model.</p>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {modelSizes.map(size => {
@@ -546,7 +546,7 @@ export default function BuilderPage() {
                         {size.is_on_sale && (
                           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">SALE</span>
                         )}
-                        <div className="text-xl font-black">{size.size_mm}mm</div>
+                        <div className="text-xl font-black">{size.size_label}</div>
                         <div className={cn('text-sm font-bold mt-1', selected ? 'text-orange-100' : 'text-gray-500')}>
                           {fmt(price)}
                         </div>
@@ -715,7 +715,7 @@ export default function BuilderPage() {
                       </div>
                       <div className="divide-y divide-gray-100">
                         <Row label="Image source" value={imageSource === 'ai' ? 'AI Generation' : 'Uploaded image'} />
-                        <Row label="Size" value={selectedSize ? `${selectedSize.size_mm}mm` : '—'} />
+                        <Row label="Size" value={selectedSize ? selectedSize.size_label : '—'} />
                         <Row label="Finish" value={selectedFinish?.name ?? '—'} />
                         {pricing?.painting && (
                           <Row label="Painting tier" value={pricing.painting.tier_name} />
@@ -742,7 +742,7 @@ export default function BuilderPage() {
                           <p className="font-black text-white text-sm">Price Breakdown</p>
                         </div>
                         <div className="p-4 space-y-2">
-                          <PriceRow label={`Size (${pricing.size.size_mm}mm)`} amount={pricing.size.price} sale={pricing.size.is_on_sale} />
+                          <PriceRow label={`Size (${pricing.size.size_label})`} amount={pricing.size.price} sale={pricing.size.is_on_sale} />
                           <PriceRow label={pricing.finish.name} amount={pricing.finish.price} sale={pricing.finish.is_on_sale} />
                           {pricing.painting && (
                             <PriceRow label={`Painting — ${pricing.painting.tier_name}`} amount={pricing.painting.price} />
