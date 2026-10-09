@@ -10,6 +10,8 @@ interface OrderItem {
   price: number;
   quantity: number;
   image: string | null;
+  colour?: { name: string; hex_code: string };
+  scale_label?: string;
 }
 
 interface Order {
@@ -153,6 +155,19 @@ export default function AdminOrdersPage() {
                     {order.items.map((item, i) => (
                       <li key={i} className="text-sm text-slate-700">
                         {item.name} × {item.quantity} — <span className="font-medium">£{(item.price * item.quantity).toFixed(2)}</span>
+                        {(item.colour || item.scale_label) && (
+                          <span className="flex items-center gap-2 mt-0.5">
+                            {item.colour && (
+                              <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                                <span className="w-3 h-3 rounded-full border border-white shadow-sm shrink-0" style={{ background: item.colour.hex_code }} />
+                                {item.colour.name}
+                              </span>
+                            )}
+                            {item.scale_label && (
+                              <span className="text-xs text-slate-500">{item.scale_label}</span>
+                            )}
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>
