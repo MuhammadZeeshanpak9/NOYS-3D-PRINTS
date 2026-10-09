@@ -99,7 +99,7 @@ export default function AdminSettingsPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await apiClient.put('/admin/settings', systemForm);
+      await apiClient.put('/admin/settings', { default_free_credits: systemForm.defaultFreeCredits });
       success('System settings saved successfully!');
     } catch (err: any) {
       toastError(err.response?.data?.error || 'Failed to save settings');
