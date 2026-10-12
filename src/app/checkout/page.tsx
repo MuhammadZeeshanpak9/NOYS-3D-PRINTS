@@ -10,13 +10,19 @@ import Link from 'next/link';
 import apiClient from '@/lib/api/client';
 import { useAuth } from '@/lib/auth/useAuth';
 
+interface DeliverySettings {
+  free_delivery_threshold: number;
+  standard_delivery_price: number;
+}
+
 export default function CheckoutPage() {
   const { items, cartTotal } = useCart();
   const { error } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
-  
+  const [delivery, setDelivery] = useState<DeliverySettings>({ free_delivery_threshold: 50, standard_delivery_price: 4.99 });
+
   const [shipping, setShipping] = useState({
     first_name: '',
     last_name: '',
@@ -26,6 +32,12 @@ export default function CheckoutPage() {
     zip_code: '',
     country: 'United Kingdom',
   });
+
+  useEffect(() => {
+    apiClient.get('/delivery-settings')
+      .then(r => setDelivery(r.data))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
@@ -240,10 +252,36 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              <div className="flex justify-between items-center text-2xl font-black text-[#0a2342] mb-8 pt-4 border-t-2 border-orange-200">
-                <span>Total</span>
-                <span className="text-orange-600">£{cartTotal.toFixed(2)}</span>
-              </div>
+              {(() => {
+                const qualifiesFreeDelivery = cartTotal >= delivery.free_delivery_threshold;
+                const deliveryPrice = qualifiesFreeDelivery ? 0 : delivery.standard_delivery_price;
+                const total = cartTotal + deliveryPrice;
+                return (
+                  <div className="mb-8 pt-4 border-t-2 border-orange-200">
+                    <div className="flex justify-between items-center text-sm font-bold text-[#1a4073] mb-2">
+                      <span>Subtotal</span>
+                      <span>£{cartTotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm font-bold mb-4">
+                      <span className="text-[#1a4073]">Delivery</span>
+                      {qualifiesFreeDelivery ? (
+                        <span className="text-green-600">FREE</span>
+                      ) : (
+                        <span className="text-[#1a4073]">£{deliveryPrice.toFixed(2)}</span>
+                      )}
+                    </div>
+                    {!qualifiesFreeDelivery && (
+                      <p className="text-xs text-orange-600 font-semibold mb-4">
+                        Spend £{(delivery.free_delivery_threshold - cartTotal).toFixed(2)} more for free delivery
+                      </p>
+                    )}
+                    <div className="flex justify-between items-center text-2xl font-black text-[#0a2342]">
+                      <span>Total</span>
+                      <span className="text-orange-600">£{total.toFixed(2)}</span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <Button 
                 type="submit" 
